@@ -1,6 +1,6 @@
 # Poc Whisper
 
-Because I'm lacking of time, my **deliverable** is a **prompt** to use with ChatGPT o1 preview. You will be surprised by the result.
+Because I'm lacking of time, my **deliverable** is a **prompt** to use with **ChatGPT o1 preview**. You will be surprised by the result.
 
 # Context
 
