@@ -58,23 +58,36 @@ My first iteration is to use the chatgpt model to generate the code. I used the 
 
 ```
 **Je souhaite mettre en place une architecture basée sur FastAPI, Kafka, et Whisper pour un service de transcription audio en temps réel. Voici le scénario complet :**
-1.	Un client (navigateur) envoie un fichier audio .wav découpé en chunks via une connexion WebSocket à une API FastAPI. Utilise Poetry pour la gestion des dépendences. Le script doit être dans un dossier "/production/api".
-2.	FastAPI reçoit ces chunks audio, génère un identifiant unique pour chaque fichier .wav, et envoie chaque chunk dans un topic Kafka (audio_chunks). Chaque message Kafka doit contenir les données audio ainsi qu'un identifiant unique pour le fichier audio et la connexion WebSocket ainsi qu'un identifiant ClientId.
-3.	Un consommateur Kafka (écrit dans un script Python séparé et utilise Poetry pour la gestion des dépendences.) écoute le topic Kafka audio_chunks, traite les chunks audio avec le modèle Whisper pour générer la transcription en temps réel, et publie la transcription dans un autre topic Kafka (transcriptions). Chaque message doit contenir l'identifiant de la connexion WebSocket d'origine ainsi que la transcription générée. Le script doit être dans un dossier "/production/worker-ia".
+1.	Un client (navigateur) envoie un fichier audio .wav découpé en chunks via une connexion WebSocket à une API FastAPI. Utilise Poetry pour la gestion des dépendences. Le script doit être dans un dossier "/production/api". 
+2.	FastAPI reçoit ces chunks audio, génère un identifiant unique pour chaque fichier .wav, et envoie chaque chunk dans un topic Kafka (audio_chunks). Chaque message Kafka doit contenir les données audio ainsi qu'un identifiant unique pour le fichier audio et la connexion WebSocket ainsi qu'un identifiant ClientId. le topic kafka qui contient les chunck du .wave doit être configuré avec 1 seule partition pour garantir garantir l'ordre des messages.
+3.	Un consommateur Kafka (écrit dans un script Python séparé et utilise Poetry pour la gestion des dépendences.) écoute le topic Kafka audio_chunks, bufferise 5 secondes puis traite les chunks audio avec le modèle Whisper pour générer la transcription en temps réel, et publie la transcription dans un autre topic Kafka (transcriptions). Chaque message doit contenir l'identifiant de la connexion WebSocket d'origine ainsi que la transcription générée. Le script doit être dans un dossier "/production/worker-ia". 
 4.	FastAPI doit aussi être un consommateur Kafka : il écoute le topic transcriptions, récupère les transcriptions, et les renvoie au client d'origine via la connexion WebSocket existante (basée sur l'identifiant WebSocket initial).
 5.  Un consommateur Kafka (écrit dans un script Python séparé et utilise Poetry pour la gestion des dépendences.) qui écoute le topic des transcriptions et les stocke dans une base de données (PostgreSQL) en fonction du SessionID et ClientID provenant de l'API. Le script doit être dans un dossier "/production/worker-database".
 
 **Je voudrais un code complet qui montre comment :**
-•	Mettre en place l'API FastAPI qui gère les connexions WebSocket et envoie les chunks à Kafka (en python 3.11).
-•	Mettre en place le consommateur Kafka qui utilise Whisper pour traiter les chunks audio et produire les transcriptions (en python 3.11).
-•	Écouter Kafka dans FastAPI pour récupérer les transcriptions et les renvoyer au client via WebSocket.
+-	Mettre en place l'API FastAPI qui gère les connexions WebSocket et envoie les chunks à Kafka.
+-	Mettre en place le consommateur Kafka qui utilise Whisper pour traiter les chunks audio et produire les transcriptions.
+-	Écouter Kafka dans FastAPI pour récupérer les transcriptions et les renvoyer au client via WebSocket.
 
 N'oubliez pas d'inclure les tâches asynchrones nécessaires pour écouter Kafka dans FastAPI et garantir que les connexions WebSocket restent ouvertes.
-Fournissez-moi un exemple complet, avec le code des deux parties (FastAPI et le consommateur Kafka Whisper).
+Fournissez-moi un exemple complet, avec le code des deux parties (FastAPI et le consommateur Kafka Whisper et le consomateur qui insère dans la database).
+
+** Pour chaque applications **
+- Utiliser Python 3.11
+- Utiliser Poetry pour la gestion des dépendances
+- Utiliser Datadog pour le monitoring
+- Utiliser OpenTelemetry pour la traçabilité
+- Exposer des métrics Prometheus via la route /metrics, toutes application utilise FastAPI pour pouvoir exporter les métrics Prometheus
+
+** Pour scaller l'application **
+- je souhaite installer et utiliser Keda
+- Pour le pod Whisper, exposer des métrics Prometheus via la route /metrics, je souhaite scaler en fonction du pourcentage de charge du GPU
+- Pour le pod FastAPI, exposer des métrics Prometheus via la route /metrics, je souhaite scaler en fonction du nombre de connexions WebSocket ouvertes
 
 **Je souhaite déployer cette architecture sur Kubernetes de façon automatique depuis une github action (il faut utiliser le gestionnaire de conteneur de github), je dispose d'un user et secret SPN azure avec un rôle contributeur sur toute la souscription**
-1. Je veux un script terraform pour deployer un Kubernetes sur Azure avec des machines GPU. Ce script doit être dans un dossier "deploy".
-2. Je veux un fichier dockerfile pour chaque partie de l'architecture (FastAPI et Whisper et Sauvegarde en base de donnée). Optimisez-les pour qu'il soit sécurisé (créer un user non root qui a uniqement des droits d'éxécutions sur l'application) et que l'image soit la plus petite possible (utilise des multi-stages). N'oublie pas que le worker doit avoir un driver GPU nvidia à jour. 
-3. Je veux un fichier docker-compose pour lancer l'architecture complète en local. Il doit être dans le dossier "production".
-4. je veux le script Github Action dans le dossier ".github/workflows" qui permet de déployer l'architecture sur Kubernetes. Vous pouvez utiliser les secrets Github pour stocker les secrets Azure.
+1. Je veux un script terraform pour deployer un Kubernetes sur AWS en utilisant le service EKS avec des machines GPU. Ce script doit être dans un dossier "deploy/infra".
+2. Je veux un script Kubernetes pour déployer toute l'infrastructure. Ce script doit être dans un dossier "deploy/kube". L'installation de Keda doit être incluse. 
+3. Je veux un fichier dockerfile pour chaque partie de l'architecture (FastAPI et Whisper et Sauvegarde en base de donnée). Optimisez-les pour qu'il soit sécurisé (créer un user non root qui a uniqement des droits d'éxécutions sur l'application) et que l'image soit la plus petite possible (utilise des multi-stages). N'oublie pas que le worker doit avoir un driver GPU nvidia à jour. 
+4. Je veux un fichier docker-compose pour lancer l'architecture complète en local. Il doit être dans le dossier "production".
+5. je veux le script Github Action dans le dossier ".github/workflows" qui permet de déployer l'architecture sur Kubernetes. Vous pouvez utiliser les secrets Github pour stocker les secrets Azure.
 ````
