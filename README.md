@@ -42,6 +42,7 @@ Last commit: I did not receive response to questions bellow (yet). So I choose t
 # Production Architecture
 
 With the use Keda whith prometeus to scale up. Use GitOps to deploy the architecture in production.
+Edit: we can also use Stream HTTP API (https://developer.mozilla.org/en-US/docs/Web/API/Streams_API) instead of using WebSocket.
 
 ![scenario1.png](documentation%2Fscenario1.png)
 
