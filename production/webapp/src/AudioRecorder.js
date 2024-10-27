@@ -1,5 +1,5 @@
-// audio-recorder.js
-const delay = ms => new Promise(res => setTimeout(res, ms));
+
+
 class AudioRecorder {
     constructor(options = {}) {
         this.audioContext = null;
