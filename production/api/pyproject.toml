@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "api"
+version = "0.1.0"
+description = ""
+authors = ["Guillaume Chervet <guillaume.chervet@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.3"
+uvicorn = "^0.32.0"
+starlette = "^0.41.0"
+torch = "^2.5.0"
+ffmpeg-python = "^0.2.0"
+aiofiles = "^24.1.0"
+llvmlite = "0.43.0"
+numba = "0.60.0"
+openai-whisper = "^20240930"
+python-multipart = "^0.0.12"
+soundfile = "^0.12.1"
+librosa = "^0.10.2.post1"
+torchaudio = "^2.5.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
