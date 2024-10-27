@@ -1,0 +1,18 @@
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile
+    image: local.io/api-transcriptor:local
+    restart: "no"
+    ports:
+      - "8000:8000"
+  webapp:
+    build:
+      context: ./webapp
+      dockerfile: ./Dockerfile
+    image: local.io/webapp-transcriptor:local
+    restart: "no"
+    ports:
+      - "4000:80"
