@@ -42,7 +42,7 @@ jobs:
       image_name: "transcriptor-api"
       image_version: ${{ needs.tags.outputs.new_version }}
       image_build_args: ""
-      image_context: ./production/webapp
+      image_context: ./production/api
       image_file: "./production/api/Dockerfile"
       docker_registry: "ghcr.io"
       docker_repository: "guillaume-chervet"
