@@ -82,10 +82,14 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform Init
+        env:
+          ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
         run: terraform init
         working-directory: deploy/terraform
 
       - name: Terraform Apply
+        env:
+          ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
         run: terraform apply -auto-approve
         working-directory: deploy/terraform
 
