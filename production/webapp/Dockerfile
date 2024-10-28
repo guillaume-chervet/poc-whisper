@@ -26,8 +26,8 @@ FROM nginx:alpine
 COPY --from=build /build/dist/ /usr/share/nginx/html
 
 # Créer les répertoires requis et définir les permissions
-RUN mkdir -p /var/cache/nginx/client_temp && \
-    chown -R 1001:1001 /var/cache/nginx
+RUN mkdir -p /var/cache/nginx/client_temp /var/run/nginx && \
+    chown -R 1001:1001 /var/cache/nginx /var/run/nginx
 
 # Créer un utilisateur non-root pour exécuter nginx
 RUN adduser -D -H -u 1001 appuser

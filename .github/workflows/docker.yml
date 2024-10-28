@@ -38,6 +38,21 @@ jobs:
     environment: MLOpsPython
     steps:
     - uses: actions/checkout@v4
+    - name: Free disk space on Ubuntu runner 🔧
+      uses: kfir4444/free-disk-space@main
+      with:
+        # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+        tool-cache: false
+
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+        android: true
+        dotnet: false
+        haskell: false
+        large-packages: false
+        docker-images: false
+        swap-storage: false
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
