@@ -109,10 +109,6 @@ class AudioRecorder {
     }
 
     startRecording() {
-       /*his.startRecordingPromise != null) {
-            return;
-        }*/
-        //this.startRecordingPromise = delay(1000);
         console.log('Démarrage de l\'enregistrement...');
         if (this.mediaRecorder && this.mediaRecorder.state === 'inactive') {
             this.mediaRecorder.start();
@@ -125,9 +121,6 @@ class AudioRecorder {
             console.log('Enregistrement démarré');
             this.onStart();
         }
-        /*this.startRecordingPromise.then(() => {
-            this.startRecordingPromise = null;
-        });*/
     }
 
     monitorSilence() {
@@ -173,6 +166,22 @@ class AudioRecorder {
             this.isRecording = false;
             console.log('Enregistrement arrêté');
         }
+    }
+    destroy() {
+        this.stopSpeechDetection();
+        this.stopRecording();
+        if (this.mediaRecorder) {
+            this.mediaRecorder.stop();
+            this.mediaRecorder = null;
+        }
+        if (this.audioContext) {
+            this.audioContext.close();
+            this.audioContext = null;
+        }
+        // delete event
+        this.onStart = () => {};
+        this.onStop = () => {};
+        this.onDataAvailable = () => {};
     }
 }
 

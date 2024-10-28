@@ -5,15 +5,13 @@ function generateColor(index) {
     return `hsl(${Math.sin(index) * 360}, 100%, 50%)`;
 }
 
-const serverUrl = 'http://localhost:8000/audio';
-
-function sendAudioChunk(chunk, clientId, chunkIndex) {
+const sendAudioChunk= (serverUrl) => (chunk, clientId, chunkIndex) => {
     const formData = new FormData();
     formData.append('audio_chunk', chunk);
     formData.append('chunk_index', chunkIndex);
     formData.append('client_id', clientId);
 
-    fetch(serverUrl, {
+    fetch(`${serverUrl}/audio`, {
         method: 'POST',
         body: formData,
     })
@@ -32,21 +30,36 @@ const AudioRecorderComponent = () => {
     const [isRecording, setIsRecording] = useState(false);
     const [error, setError] = useState(null);
     const [transcripts, setTranscripts] = useState([]);
-    const [chunkIndex, setChunkIndex] = useState(0); // Initialiser le chunkIndex à 0
+    const [chunkIndex, setChunkIndex] = useState(0);
+    const [serverUrl, setServerUrl] = useState('http://localhost:8000');
     const recorderRef = useRef(null);
+    const eventSourceRef = useRef(null);
 
     useEffect(() => {
+        // Nettoyage des ressources précédentes
         if (recorderRef.current) {
-            return;
+            if (recorderRef.current.isRecording) {
+                recorderRef.current.stopRecording();
+            }
+            if (recorderRef.current.audioContext) {
+                recorderRef.current.audioContext.close();
+            }
+            recorderRef.current = null;
         }
+
+        if (eventSourceRef.current) {
+            eventSourceRef.current.close();
+            eventSourceRef.current = null;
+        }
+
         const clientId = Math.random().toString(36).substring(7);
-        const eventSource = new EventSource(`http://localhost:8000/stream?client_id=${clientId}`);
+        const eventSource = new EventSource(`${serverUrl}/stream?client_id=${clientId}`);
+        eventSourceRef.current = eventSource;
 
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
 
             setTranscripts((prev) => {
-                // verifier si le chunk est déjà présent
                 if (prev.some(t => t.chunk_index === data.chunk_index)) {
                     return prev;
                 }
@@ -65,13 +78,16 @@ const AudioRecorderComponent = () => {
         };
 
         eventSource.onopen = () => {
+            setError(null);
             console.log('Connexion SSE établie');
         };
 
         eventSource.onclose = () => {
             console.log('Connexion SSE fermée');
         };
+
         let closureChunkIndex = chunkIndex;
+
         const recorder = new AudioRecorder({
             onStart: () => {
                 console.log('Enregistrement commencé (callback)');
@@ -85,11 +101,11 @@ const AudioRecorderComponent = () => {
             },
             onDataAvailable: (data) => {
                 console.log('Enregistrement de données audio (callback)');
-                sendAudioChunk(data, clientId, closureChunkIndex);
+                sendAudioChunk(serverUrl)(data, clientId, closureChunkIndex);
                 setChunkIndex((prevIndex) =>{
                     closureChunkIndex++;
                     return prevIndex + 1;
-                }); // Incrémentation après l'envoi
+                });
             },
             onError: (err) => {
                 console.error('Erreur de l\'enregistreur audio :', err);
@@ -104,31 +120,46 @@ const AudioRecorderComponent = () => {
         recorder.init();
 
         return () => {
-            if (recorderRef.current && recorderRef.current.isRecording) {
-                recorderRef.current.stopRecording();
+            if (recorderRef.current) {
+                recorderRef.current.destroy();
+                recorderRef.current = null;
             }
-            if (recorderRef.current && recorderRef.current.audioContext) {
-                recorderRef.current.audioContext.close();
+            if (eventSourceRef.current) {
+                eventSourceRef.current.close();
+                eventSourceRef.current = null;
             }
         };
-    }, [transcripts, chunkIndex]);
+    }, [serverUrl]);
 
     return (
         <div>
             <h1>Enregistreur Audio avec Transcription en Temps Réel</h1>
+            <div>
+                <label>
+                    URL de base de l'API :
+                    <input
+                        type="text"
+                        value={serverUrl}
+                        onChange={(e) => setServerUrl(e.target.value)}
+                        placeholder="http://localhost:8000"
+                    />
+                </label>
+            </div>
             {error ? (
                 <p style={{ color: 'red' }}>{error}</p>
             ) : (
                 <p>{status}</p>
             )}
             <div>
-                { chunkIndex > 0  && <h2>Transcription :</h2>}
+                {chunkIndex > 0 && <h2>Transcription :</h2>}
                 <p>{transcripts.map(t => (
                     <span key={t.chunk_index} style={{ color: generateColor(t.chunk_index) }}>
                         {t.transcript}
                     </span>
                 ))}</p>
-                {chunkIndex > transcripts.length && <p>Traitement de {chunkIndex - transcripts.length} chunk en cours...</p>}
+                {chunkIndex > transcripts.length && (
+                    <p>Traitement de {chunkIndex - transcripts.length} chunk en cours...</p>
+                )}
             </div>
         </div>
     );

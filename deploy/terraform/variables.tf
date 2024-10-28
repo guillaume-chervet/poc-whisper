@@ -13,7 +13,3 @@ variable "location" {
   type    = string
   default = "East US"
 }
-
-variable "docker_image_name" {
-  type = string
-}
