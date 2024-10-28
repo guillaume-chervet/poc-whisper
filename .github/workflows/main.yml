@@ -89,7 +89,7 @@ jobs:
 
       - name: Terraform Apply
         env:
-          ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+          TF_VAR_subscription_id: ${{ secrets.subscription_id }}
         run: terraform apply -auto-approve
         working-directory: deploy/terraform
 
