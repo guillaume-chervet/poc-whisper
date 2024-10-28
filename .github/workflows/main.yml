@@ -83,19 +83,19 @@ jobs:
 
       - name: Terraform Init
         env:
-          ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform init
         working-directory: deploy/terraform
 
       - name: Terraform Apply
         env:
-          TF_VAR_subscription_id: ${{ secrets.subscription_id }}
+          TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform apply -auto-approve
         working-directory: deploy/terraform
 
       - name: Setup kubectl
         env:
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
           az aks get-credentials --resource-group ""aks-resource-group" --name "aks-cluster"
 
