@@ -21,3 +21,18 @@ services:
     restart: "no"
     ports:
       - "4000:80"
+  slimfaas:
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    image: docker.io/axaguildev/slimfaas:0.24.18
+    ports:
+      - 5020:5000
+    environment:
+      - BASE_FUNCTION_URL=http://{function_name}:8000
+      - BASE_FUNCTION_POD_URL=http://{function_name}:8000
+      - MOCK_KUBERNETES_FUNCTIONS={"Functions":[{"Name":"api","NumberParallelRequest":1},{"Name":"ia-worker","NumberParallelRequest":1}],"Slimfaas":[{"Name":"slimfaas-1"}]}
+      - BASE_SLIMDATA_URL=http://localhost:3262/
+      - HOSTNAME=slimfaas-1
+      - SLIMDATA_CONFIGURATION={"coldStart":"true"}
+      - SLIMFAAS_PORTS=5000,5020
+      #- SLIMFAAS_SUBSCRIBE_EVENTS=reload=>https://host.docker.internal:8000

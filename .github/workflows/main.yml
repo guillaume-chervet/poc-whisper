@@ -97,12 +97,11 @@ jobs:
         env:
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
-          az aks get-credentials --resource-group ""aks-resource-group" --name "aks-cluster"
+          az aks get-credentials --resource-group "aks-resource-group" --name "aks-cluster"
 
       - name: Apply Kubernetes Deployment
         working-directory: deploy/kubernetes
         run: |
-          // remplacer la clé :latest par la version de l'image préfixé par :
           sed -i 's/:latest/:${{ needs.tags.outputs.new_version }}/g' api-deployment.yaml
           sed -i 's/:latest/:${{ needs.tags.outputs.new_version }}/g' webapp-deployment.yaml
           kubectl apply -f webapp-deployment.yaml
