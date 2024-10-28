@@ -82,12 +82,14 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform Init
+        working-directory: deploy/terraform
         env:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform init
-        working-directory: deploy/terraform
+
 
       - name: Import Resource Group if Exists
+        working-directory: deploy/terraform
         run: |
           terraform state list | grep "azurerm_resource_group.aks_rg" || terraform import azurerm_resource_group.aks_rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/aks-resource-group
 
