@@ -11,7 +11,7 @@ variable "aks_cluster_name" {
 
 variable "location" {
   type    = string
-  default = "East US"
+  default = "West Europe"
 }
 
 variable "subscription_id" {
