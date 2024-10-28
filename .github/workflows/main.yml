@@ -108,6 +108,8 @@ jobs:
       - name: Apply Kubernetes Deployment
         working-directory: deploy/kubernetes
         run: |
+          
+          kubectl create namespace transcriptor 
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
           helm repo update
