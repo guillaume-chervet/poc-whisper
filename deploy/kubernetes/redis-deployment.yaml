@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  namespace: transcriptor
+  labels:
+    app: redis
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+        app: redis
+    template:
+        metadata:
+        labels:
+            app: redis
+        spec:
+        containers:
+            - name: redis-container
+              image: redis:latest
+              ports:
+                  - containerPort: 6379
+              resources:
+                  limits:
+                    memory: "1000Mi"
+                    cpu: "1000m"
+                  requests:
+                    ephemeral-storage: "1000Mi"
+                    memory: "1000Mi"
+                    cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: transcriptor
+spec:
+    selector:
+        app: redis
+    ports:
+        - protocol: TCP
+          port: 6379
+          targetPort: 6379
+    type: ClusterIP

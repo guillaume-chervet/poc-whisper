@@ -91,7 +91,7 @@ jobs:
       - name: Import Resource Group if Exists
         working-directory: deploy/terraform
         run: |
-          terraform state list -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" | grep "azurerm_resource_group.aks_rg" || terraform import -var="subscription_id=${{ secrets.subscription_id }}" azurerm_resource_group.aks_rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/aks-resource-group
+          terraform state list -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" | grep "azurerm_resource_group.aks_rg" || terraform import -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" azurerm_resource_group.aks_rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/aks-resource-group
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
@@ -119,3 +119,5 @@ jobs:
           kubectl apply -f webapp-service.yaml
           kubectl apply -f api-deployment.yaml
           kubectl apply -f api-service.yaml
+          kubectl apply -f slimfaas-deployment.yaml
+          kubectl apply -f redis-deployment.yaml

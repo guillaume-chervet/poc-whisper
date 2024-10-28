@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: transcriptor
+  labels:
+    name: slimfaas
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: slimfaas
+  namespace: transcriptor
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: namespace-lister
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces", "pods"]
+    verbs: ["list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: slimfaas-namespace-lister
+subjects:
+  - kind: ServiceAccount
+    name: slimfaas
+    namespace: transcriptor
+roleRef:
+  kind: ClusterRole
+  name: namespace-lister
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: deployment-statefulset-manager
+  namespace: transcriptor
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments/scale", "statefulsets/scale"]
+    verbs: ["get", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: slimfaas-deployment-statefulset-manager
+  namespace: transcriptor
+subjects:
+  - kind: ServiceAccount
+    name: slimfaas
+    namespace: transcriptor
+roleRef:
+  kind: Role
+  name: deployment-statefulset-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: slimfaas
+  namespace: transcriptor
+spec:
+  replicas: 3
+  podManagementPolicy: Parallel
+  serviceName: slimfaas
+  selector:
+    matchLabels:
+      app: slimfaas
+  template:
+    metadata:
+      labels:
+        app: slimfaas
+    spec:
+      volumes:
+        - name: slimfaas-volume
+          emptyDir:
+            sizeLimit: 10Mi
+      serviceAccountName: slimfaas
+      containers:
+        - name: slimfaas
+          image: axaguildev/slimfaas:0.24.18
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            timeoutSeconds: 8
+            terminationGracePeriodSeconds: 30
+          env:
+            - name: BASE_FUNCTION_URL
+              value: "http://{function_name}.{namespace}.svc.cluster.local:5000"
+            - name: BASE_FUNCTION_POD_URL # require for publish route
+              value: "http://{pod_ip}:5000"
+            - name: BASE_SLIMDATA_URL
+              value: "http://{pod_ip}:3262/"
+            - name: NAMESPACE
+              value: "transcriptor"
+            - name: SLIMDATA_DIRECTORY
+              value: "/database"
+            - name: SLIMFAAS_PORTS
+              value: "5000,30021"
+            - name: DOTNET_GCHeapHardLimit
+              value: "03200000"
+            - name: DOTNET_gcServer
+              value: "1"
+            - name: Logging__LogLevel__SlimFaas
+              value: "Debug"
+            #- name: SLIMDATA_CONFIGURATION
+            #  value: |
+            #    {"lowerElectionTimeout":"500","upperElectionTimeout":"1000","requestTimeout":"00:01:20.0000000","rpcTimeout":"00:00:40.0000000","heartbeatThreshold":"0.5"}
+            #- name: SLIMDATA_SOCKETS_HTTP_HANDLER_TIMEOUT
+            #  value: "500"
+          volumeMounts:
+            - name: slimfaas-volume
+              mountPath: /database
+          resources:
+            limits:
+              memory: "60Mi"
+              cpu: "400m"
+            requests:
+              memory: "60Mi"
+              cpu: "200m"
+          ports:
+            - containerPort: 5000
+              name: slimfaas
+            - containerPort: 3262
+              name: slimdata
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: slimfaas
+  namespace: transcriptor
+spec:
+  selector:
+    app: slimfaas
+  ports:
+    - name: "http"
+      port: 5000
+    - name: "slimdata"
+      port: 3262
