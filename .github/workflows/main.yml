@@ -91,12 +91,10 @@ jobs:
       - name: Import Resource Group if Exists
         working-directory: deploy/terraform
         run: |
-          terraform state list | grep "azurerm_resource_group.aks_rg" || terraform import azurerm_resource_group.aks_rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/aks-resource-group
+          terraform state list -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" | grep "azurerm_resource_group.aks_rg" || terraform import azurerm_resource_group.aks_rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/aks-resource-group
 
       - name: Terraform Apply
-        env:
-          TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
         working-directory: deploy/terraform
 
       - name: Setup kubectl
