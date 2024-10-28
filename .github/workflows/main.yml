@@ -88,10 +88,24 @@ jobs:
         run: terraform init
 
 
-      - name: Import Resource Group if Exists
+      - name: Import Terraform Resource if Exists
         working-directory: deploy/terraform
         run: |
-          terraform state list -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" | grep "azurerm_resource_group.aks_rg" || terraform import -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" azurerm_resource_group.aks_rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/aks-resource-group
+          # Array des ressources à vérifier pour importation
+          resources=(
+            "azurerm_resource_group.aks_rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/aks-resource-group"
+            "azurerm_kubernetes_cluster.aks /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/aks-resource-group/providers/Microsoft.ContainerService/managedClusters/aks-cluster"
+          )
+          
+          # Boucle pour chaque ressource dans la liste
+          for resource in "${resources[@]}"; do
+            # Sépare la ressource et son ID
+            res_type=$(echo $resource | awk '{print $1}')
+            res_id=$(echo $resource | awk '{print $2}')
+          
+            # Vérifie si la ressource est déjà dans l'état Terraform
+            terraform state list -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" | grep "$res_type" || terraform import -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" $res_type $res_id
+          done
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
