@@ -1,4 +1,5 @@
-FROM python:3.11-slim
+# Première étape : Construire l'environnement avec les dépendances nécessaires
+FROM python:3.11-slim AS build
 
 # Mettre à jour les paquets et installer les dépendances requises
 RUN apt-get update && \
@@ -16,33 +17,60 @@ RUN echo "deb http://apt.llvm.org/bookworm/ llvm-toolchain-bookworm main" > /etc
     apt-get update && \
     apt-get install -y llvm
 
-# Ajouter LLVM au PATH
-ENV PATH="/usr/lib/llvm/bin:${PATH}"
-
 # Installer ffmpeg
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ffmpeg
+RUN apt-get install -y --no-install-recommends ffmpeg
 
-# Nettoyer le cache pour réduire la taille de l'image
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Trouver les chemins exacts des binaires et les stocker dans des variables d'environnement
+RUN export LLVM_PATH=$(which llvm-config) && \
+    export FFMPEG_PATH=$(which ffmpeg) && \
+    echo "LLVM_PATH=${LLVM_PATH}" >> /etc/environment && \
+    echo "FFMPEG_PATH=${FFMPEG_PATH}" >> /etc/environment
 
-# Vérification de l'installation
-RUN ffmpeg -version && llvm-config --version
-
+# Installer Poetry
 RUN pip install poetry
 
+# Configurer le dossier de travail
 WORKDIR /app
 
+# Copier uniquement les fichiers nécessaires pour installer les dépendances
 COPY pyproject.toml poetry.lock /app/
 
-RUN poetry config virtualenvs.create false && poetry install --no-dev
+# Installer les dépendances sans les dev packages
+RUN poetry config virtualenvs.create false && poetry install --only main
 
-COPY . /app
+# Stocker le chemin de uvicorn dans une variable d'environnement
+RUN export UVICORN_PATH=$(which uvicorn) && echo "UVICORN_PATH=${UVICORN_PATH}" >> /etc/environment
 
-EXPOSE 8002
 
+# Deuxième étape : Construire l'image finale allégée
+FROM python:3.11-slim
+
+# Récupérer les chemins des binaires depuis l'étape de build
+ARG LLVM_PATH
+ARG FFMPEG_PATH
+ARG UVICORN_PATH
+
+# Copier les binaires en utilisant les chemins détectés
+COPY --from=build ${UVICORN_PATH} /usr/local/bin/uvicorn
+COPY --from=build ${LLVM_PATH} /usr/local/bin/llvm-config
+COPY --from=build ${FFMPEG_PATH} /usr/local/bin/ffmpeg
+
+# Copier l'environnement de l'application et ses dépendances
+COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=build /app /app
+
+# Ajouter les binaires au PATH
+ENV PATH="/usr/local/bin:${PATH}"
+
+# Définir le dossier de travail
+WORKDIR /app
+
+# Créer et utiliser un utilisateur non-root
 RUN useradd -ms /bin/bash appuser
 USER appuser
 
+# Exposer le port de l'application
+EXPOSE 8002
+
+# Commande pour démarrer l'application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

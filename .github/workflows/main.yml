@@ -63,3 +63,45 @@ jobs:
     secrets:
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [tags, build_docker_api, build_docker_webapp]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./deployment/terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./deployment/terraform
+
+      - name: Setup kubectl
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+        run: |
+          az aks get-credentials --resource-group ""aks-resource-group" --name "aks-cluster"
+
+      - name: Apply Kubernetes Deployment
+        working-directory: ./deployment/kubernetes
+        run: |
+          // remplacer la clé :latest par la version de l'image préfixé par :
+          sed -i 's/:latest/:${{ needs.tags.outputs.new_version }}/g' api-deployment.yaml
+          sed -i 's/:latest/:${{ needs.tags.outputs.new_version }}/g' webapp-deployment.yaml
+          kubectl apply -f webapp-deployment.yaml
+          kubectl apply -f webapp-service.yaml
+          kubectl apply -f api-deployment.yaml
+          kubectl apply -f api-service.yaml
