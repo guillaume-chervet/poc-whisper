@@ -77,17 +77,17 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./deployment/terraform
+        working-directory: deployment/terraform
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: ./deployment/terraform
+        working-directory: deployment/terraform
 
       - name: Setup kubectl
         env:

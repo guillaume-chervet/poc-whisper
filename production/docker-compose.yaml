@@ -1,5 +1,10 @@
 
 services:
+  redis:
+    image: redis:6.0.9
+    restart: "no"
+    ports:
+      - "6379:6379"
   api:
     build:
       context: ./api
