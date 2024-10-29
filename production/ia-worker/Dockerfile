@@ -68,7 +68,7 @@ COPY --chown=appuser:appuser --from=build /app /app
 USER appuser
 
 # Ajouter l'environnement virtuel au PATH
-ENV PATH="/app/.venv/bin:${PATH}"
+ENV PATH="/usr/local/bin:/app/.venv/bin:${PATH}"
 
 # Commande pour démarrer l'application
 CMD ["python", "./app/main.py"]
