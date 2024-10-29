@@ -46,15 +46,13 @@ RUN useradd -ms /bin/bash appuser
 # Copier les chemins des binaires stockés dans des fichiers temporaires
 COPY --from=build /llvm_path /ffmpeg_path /uvicorn_path /tmp/
 
-# Charger les chemins des binaires depuis les fichiers temporaires et les définir comme variables d'environnement
-ENV LLVM_PATH=$(cat /tmp/llvm_path)
-ENV FFMPEG_PATH=$(cat /tmp/ffmpeg_path)
-ENV UVICORN_PATH=$(cat /tmp/uvicorn_path)
-
-# Copier les binaires en utilisant les chemins détectés
-COPY --from=build ${LLVM_PATH} /usr/local/bin/llvm-config
-COPY --from=build ${FFMPEG_PATH} /usr/local/bin/ffmpeg
-COPY --from=build ${UVICORN_PATH} /usr/local/bin/uvicorn
+# Charger les chemins des binaires depuis les fichiers temporaires en utilisant RUN pour définir les variables d’environnement
+RUN export LLVM_PATH=$(cat /tmp/llvm_path) && \
+    export FFMPEG_PATH=$(cat /tmp/ffmpeg_path) && \
+    export UVICORN_PATH=$(cat /tmp/uvicorn_path) && \
+    cp $LLVM_PATH /usr/local/bin/llvm-config && \
+    cp $FFMPEG_PATH /usr/local/bin/ffmpeg && \
+    cp $UVICORN_PATH /usr/local/bin/uvicorn
 
 # Copier les packages Python installés
 COPY --chown=appuser:appuser --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
@@ -75,4 +73,4 @@ USER appuser
 ENV PATH="/app/.venv/bin:${PATH}"
 
 # Commande pour démarrer l'application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
