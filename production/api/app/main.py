@@ -10,9 +10,6 @@ import ffmpeg
 import io
 import torchaudio
 
-from production.api.app.app_settings import app_settings_instance
-from production.api.app.http_service import http_service
-
 app = FastAPI()
 
 # Ajouter le middleware CORS
@@ -204,7 +201,7 @@ async def receive_audio_chunk(
     redis_instance.set_key(chunk_id, chunk)
     app_settings = app_settings_factory_get()
     http_service = http_service_factory_get()
-    http_service.post( app_settings.url_slimfaas + "/transcribe", data={"chunk_id": chunk_id})
+    http_service.post( app_settings.url_slimfaas + "/async-function/transcribe", data={"chunk_id": chunk_id})
 
     return {"status": "Chunk received"}
 

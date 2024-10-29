@@ -6,6 +6,11 @@ metadata:
   namespace: transcriptor
   labels:
     app: ia-worker
+  annotations:
+    SlimFaas/Function: "true"
+    SlimFaas/TimeoutSecondBeforeSetReplicasMin: "300"
+    SlimFaas/NumberParallelRequest: "1"
+    SlimFaas/Visibility: "Private"
 spec:
   replicas: 1
   selector:
@@ -21,6 +26,9 @@ spec:
           image: ghcr.io/guillaume-chervet/transcriptor-ia-worker:latest
           ports:
             - containerPort: 8000
+          env:
+            - name: PYTHON_ENVIRONMENT
+              value: "production"
           resources:
             limits:
               memory: "2000Mi"

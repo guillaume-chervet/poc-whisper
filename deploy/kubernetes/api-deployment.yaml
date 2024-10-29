@@ -27,6 +27,9 @@ spec:
           image: ghcr.io/guillaume-chervet/transcriptor-api:latest
           ports:
             - containerPort: 8000
+          env:
+            - name: PYTHON_ENVIRONMENT
+              value: "production"
           resources:
             limits:
               memory: "2000Mi"

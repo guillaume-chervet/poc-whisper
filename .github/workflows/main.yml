@@ -49,6 +49,20 @@ jobs:
     secrets:
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+  build_docker_ia_worker:
+    needs: [ tags ]
+    uses: ./.github/workflows/docker.yml
+    with:
+      image_name: "transcriptor-ia-worker"
+      image_version: ${{ needs.tags.outputs.new_version }}
+      image_build_args: ""
+      image_context: ./production/ia-worker
+      image_file: "./production/ia-worker/Dockerfile"
+      docker_registry: "ghcr.io"
+      docker_repository: "guillaume-chervet"
+    secrets:
+      DOCKER_USERNAME: ${{ github.actor }}
+      DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   build_docker_webapp:
     needs: [tags]
     uses: ./.github/workflows/docker.yml
