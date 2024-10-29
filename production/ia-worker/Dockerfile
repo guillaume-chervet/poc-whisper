@@ -41,18 +41,18 @@ COPY --from=build /usr/local/bin /usr/local/bin
 # Copier les packages Python installés
 COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
-# Copier le code de l'application
-COPY --from=build /app /app
-
 # Configurer le PATH pour inclure /usr/local/bin
 ENV PATH="/usr/local/bin:${PATH}"
 
 # Définir le dossier de travail
 WORKDIR /app
 
+# Copier le code de l'application
+COPY --from=build /app /app
+
 # Créer et utiliser un utilisateur non-root
 RUN useradd -ms /bin/bash appuser
 USER appuser
 
 # Commande pour démarrer l'application
-CMD ["uvicorn", "app:main", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

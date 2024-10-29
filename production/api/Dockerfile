@@ -1,7 +1,7 @@
-# First stage: Build environment with necessary dependencies
+# Première étape : Construire l'environnement avec les dépendances nécessaires
 FROM python:3.11-slim AS build
 
-# Update packages and install required dependencies
+# Mettre à jour les paquets et installer les dépendances requises
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     wget \
@@ -11,51 +11,48 @@ RUN apt-get update && \
     lsb-release \
     software-properties-common
 
-# Add LLVM repository to get the latest version
+# Ajouter le dépôt LLVM pour obtenir la version la plus récente
 RUN echo "deb http://apt.llvm.org/bookworm/ llvm-toolchain-bookworm main" > /etc/apt/sources.list.d/llvm.list && \
     wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
     apt-get update && \
     apt-get install -y llvm
 
-# Install ffmpeg
+# Installer ffmpeg
 RUN apt-get install -y --no-install-recommends ffmpeg
 
-# Install Poetry
+# Installer Poetry
 RUN pip install poetry
 
-# Set the working directory
+# Configurer le dossier de travail
 WORKDIR /app
 
-# Copy only the files needed to install dependencies
+# Copier uniquement les fichiers nécessaires pour installer les dépendances
 COPY pyproject.toml poetry.lock /app/
 
-# Install dependencies without dev packages
+# Installer les dépendances sans les dev packages
 RUN poetry config virtualenvs.create false && poetry install --only main
 
-# Copy the rest of the application code
-COPY . /app
-
-# Second stage: Build the final lightweight image
+# Deuxième étape : Construire l'image finale allégée
 FROM python:3.11-slim
 
-# Copy all the executables installed from the build stage to the final image
+# Copier tous les exécutables installés de l'étape de build vers l'image finale
 COPY --from=build /usr/local/bin /usr/local/bin
 
-# Copy the installed Python packages
+# Copier les packages Python installés
 COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
-# Copy the application code
-COPY --from=build /app /app
-
-# Configure the PATH to include /usr/local/bin
+# Configurer le PATH pour inclure /usr/local/bin
 ENV PATH="/usr/local/bin:${PATH}"
 
-# Set the working directory
+# Définir le dossier de travail
 WORKDIR /app
 
-# Create and use a non-root user
+# Copier le code de l'application
+COPY --from=build /app /app
+
+# Créer et utiliser un utilisateur non-root
 RUN useradd -ms /bin/bash appuser
 USER appuser
 
-# Command to start the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Commande pour démarrer l'application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
