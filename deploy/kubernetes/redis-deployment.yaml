@@ -15,6 +15,10 @@ spec:
     metadata:
       labels:
         app: redis
+      annotations:
+        SlimFaas/Function: "true"
+        SlimFaas/TimeoutSecondBeforeSetReplicasMin: "1200"
+        SlimFaas/NumberParallelRequest: "1"
     spec:
       containers:
         - name: redis-container

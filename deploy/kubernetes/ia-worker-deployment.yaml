@@ -8,10 +8,11 @@ metadata:
     app: ia-worker
   annotations:
     SlimFaas/Function: "true"
-    SlimFaas/TimeoutSecondBeforeSetReplicasMin: "300"
+    SlimFaas/TimeoutSecondBeforeSetReplicasMin: "1200"
     SlimFaas/NumberParallelRequest: "1"
     SlimFaas/Visibility: "Private"
-    SlimFaas/ReplicasMin: "1"
+    SlimFaas/ReplicasMin: "0"
+    SlimFaas/DependsOn: "redis"
 spec:
   replicas: 1
   selector:

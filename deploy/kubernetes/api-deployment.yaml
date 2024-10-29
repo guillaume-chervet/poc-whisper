@@ -17,10 +17,11 @@ spec:
         app: api
       annotations:
         SlimFaas/Function: "true"
-        SlimFaas/TimeoutSecondBeforeSetReplicasMin: "300"
+        SlimFaas/TimeoutSecondBeforeSetReplicasMin: "1200"
         SlimFaas/NumberParallelRequest: "1"
         SlimFaas/SubscribeEvents: "Private:transcript"
-        SlimFaas/ReplicasMin: "1"
+        SlimFaas/ReplicasMin: "0"
+        SlimFaas/DependsOn: "redis"
     spec:
       containers:
         - name: api-container
