@@ -11,6 +11,7 @@ metadata:
     SlimFaas/TimeoutSecondBeforeSetReplicasMin: "300"
     SlimFaas/NumberParallelRequest: "1"
     SlimFaas/Visibility: "Private"
+    SlimFaas/ReplicasMin: "1"
 spec:
   replicas: 1
   selector:

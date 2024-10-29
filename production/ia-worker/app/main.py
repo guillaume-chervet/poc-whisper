@@ -135,6 +135,9 @@ async def send_sse_message(client_id, message, chunk_index):
     http_service = http_service_factory_get()
     await http_service.post(app_settings.url_slimfaas + "/publish-event/transcript", data=json_data, headers={"Content-Type": "application/json"})
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn
