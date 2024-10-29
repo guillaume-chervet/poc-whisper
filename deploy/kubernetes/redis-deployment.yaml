@@ -23,12 +23,12 @@ spec:
             - containerPort: 6379
           resources:
               limits:
-                memory: "1000Mi"
-                cpu: "1000m"
+                memory: "400Mi"
+                cpu: "200m"
               requests:
                 ephemeral-storage: "1000Mi"
-                memory: "1000Mi"
-                cpu: "1000m"
+                memory: "400Mi"
+                cpu: "200m"
 ---
 apiVersion: v1
 kind: Service
