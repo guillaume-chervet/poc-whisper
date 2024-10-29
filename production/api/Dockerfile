@@ -30,7 +30,7 @@ WORKDIR /app
 COPY . /app
 
 # Installer les dépendances sans les dev packages
-RUN poetry config virtualenvs.create true && poetry install --no-root --only main
+RUN poetry config virtualenvs.create false && poetry install --no-root --only main
 
 # Stocker les chemins des binaires dans des fichiers temporaires
 RUN which llvm-config > /llvm_path && \
@@ -68,7 +68,7 @@ COPY --chown=appuser:appuser --from=build /app /app
 USER appuser
 
 # Ajouter l'environnement virtuel au PATH
-ENV PATH="/usr/local/bin:/app/.venv/bin:${PATH}"
+ENV PATH="/usr/local/bin:${PATH}"
 
 # Commande pour démarrer l'application
 CMD ["python", "./app/main.py"]
