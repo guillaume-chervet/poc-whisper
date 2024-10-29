@@ -27,7 +27,7 @@ RUN pip install poetry
 WORKDIR /app
 
 # Copier uniquement les fichiers nécessaires pour installer les dépendances
-COPY pyproject.toml poetry.lock ./
+COPY . /app
 
 # Installer les dépendances sans les dev packages
 RUN poetry config virtualenvs.create true && poetry install --no-root --only main
@@ -62,8 +62,7 @@ RUN chown -R appuser:appuser /usr/local/lib/python3.11/site-packages /usr/local/
 WORKDIR /app
 
 # Copier le code de l'application
-COPY --chown=appuser:appuser --from=build /app ./
-COPY --chown=appuser:appuser ./app ./app
+COPY --chown=appuser:appuser --from=build /app /app
 
 # Exécuter l'application en tant qu'utilisateur non-root
 USER appuser
