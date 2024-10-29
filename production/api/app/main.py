@@ -9,6 +9,7 @@ import whisper
 import ffmpeg
 import io
 import torchaudio
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -34,7 +35,7 @@ clients = {}
 # Créer une file d'attente pour les tâches de transcription
 transcription_queue = asyncio.Queue()
 
-class Transcript:
+class Transcript(BaseModel):
     message:str
     chunk_index: int
     client_id:str
