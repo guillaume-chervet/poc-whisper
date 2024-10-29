@@ -142,6 +142,7 @@ jobs:
           
           sed -i 's/:latest/:${{ needs.tags.outputs.new_version }}/g' api-deployment.yaml
           sed -i 's/:latest/:${{ needs.tags.outputs.new_version }}/g' webapp-deployment.yaml
+          sed -i 's/:latest/:${{ needs.tags.outputs.new_version }}/g' ia-worker-deployment.yaml
           kubectl apply -f webapp-deployment.yaml
           kubectl apply -f webapp-service.yaml
           kubectl apply -f api-deployment.yaml
