@@ -53,10 +53,10 @@ COPY $LLVM_PATH /usr/local/bin/llvm-config
 COPY $FFMPEG_PATH /usr/local/bin/ffmpeg
 
 # Copier les packages Python installés
-COPY --chown=appuser:appuser --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
 # Donner les permissions appropriées pour l'utilisateur non-root
-RUN chown -R appuser:appuser /app /usr/local/lib/python3.11/site-packages /usr/local/bin
+RUN chown -R appuser:appuser /usr/local/lib/python3.11/site-packages /usr/local/bin
 
 # Définir le dossier de travail
 WORKDIR /app
