@@ -1,4 +1,3 @@
-# service.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,6 +7,5 @@ spec:
   selector:
     app: ia-worker
   ports:
-    - protocol: "http"
-      port: 8000        # Port exposé publiquement
-      targetPort: 8000 # Port interne de l'application
+    - name: "http"
+      port: 8000

@@ -1,4 +1,3 @@
-# service.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,7 +7,5 @@ spec:
   selector:
     app: api
   ports:
-    - protocol: TCP
-      port: 80        # Port exposé publiquement
-      targetPort: 8000 # Port interne de l'application
-  type: LoadBalancer
+    - name: "http"
+      port: 8000

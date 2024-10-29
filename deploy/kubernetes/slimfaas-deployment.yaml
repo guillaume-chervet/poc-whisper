@@ -138,3 +138,18 @@ spec:
       port: 5000
     - name: "slimdata"
       port: 3262
+---
+# service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: slimfaas-extenal
+  namespace: transcriptor
+spec:
+  selector:
+    app: slimfaas
+  ports:
+    - protocol: TCP
+      port: 80        # Port exposé publiquement
+      targetPort: 5000 # Port interne de l'application
+  type: LoadBalancer

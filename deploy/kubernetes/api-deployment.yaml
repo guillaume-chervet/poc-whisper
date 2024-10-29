@@ -20,6 +20,7 @@ spec:
         SlimFaas/TimeoutSecondBeforeSetReplicasMin: "300"
         SlimFaas/NumberParallelRequest: "1"
         SlimFaas/SubscribeEvents: "Private:transcript"
+
     spec:
       containers:
         - name: api-container
