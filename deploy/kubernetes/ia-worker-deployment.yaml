@@ -2,28 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api
+  name: ia-worker
   namespace: transcriptor
   labels:
-    app: api
+    app: ia-worker
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: api
+      app: ia-worker
   template:
     metadata:
       labels:
-        app: api
-    annotations:
-      SlimFaas/Function: "true"
-      SlimFaas/TimeoutSecondBeforeSetReplicasMin: "300"
-      SlimFaas/NumberParallelRequest: "1"
-      SlimFaas/SubscribeEvents: "Private:transcript"
+        app: ia-worker
     spec:
       containers:
-        - name: api-container
-          image: ghcr.io/guillaume-chervet/transcriptor-api:latest
+        - name: ia-worker-container
+          image: ghcr.io/guillaume-chervet/transcriptor-ia-worker:latest
           ports:
             - containerPort: 8000
           resources:

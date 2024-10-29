@@ -15,11 +15,6 @@ spec:
     metadata:
       labels:
         app: webapp
-      annotations:
-        SlimFaas/Function: "true"
-        SlimFaas/TimeoutSecondBeforeSetReplicasMin: "300"
-        SlimFaas/NumberParallelRequest: "1"
-        SlimFaas/SubscribeEvents : "Private:transcript"
     spec:
       containers:
         - name: webapp-container

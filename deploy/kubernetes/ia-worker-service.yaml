@@ -1,0 +1,13 @@
+# service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ia-worker
+  namespace: transcriptor
+spec:
+  selector:
+    app: ia-worker
+  ports:
+    - protocol: "http"
+      port: 8000        # Port exposé publiquement
+      targetPort: 8000 # Port interne de l'application
