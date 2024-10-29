@@ -32,26 +32,40 @@ COPY pyproject.toml poetry.lock /app/
 # Installer les dépendances sans les dev packages
 RUN poetry config virtualenvs.create false && poetry install --only main
 
+# Stocker les chemins des binaires dans des variables d'environnement
+RUN echo "LLVM_PATH=$(which llvm-config)" >> /etc/environment && \
+    echo "FFMPEG_PATH=$(which ffmpeg)" >> /etc/environment && \
+    echo "UVICORN_PATH=$(which uvicorn)" >> /etc/environment
+
 # Deuxième étape : Construire l'image finale allégée
 FROM python:3.11-slim
 
-# Copier tous les exécutables installés de l'étape de build vers l'image finale
-COPY --from=build /usr/local/bin /usr/local/bin
+# Créer l'utilisateur non-root
+RUN useradd -ms /bin/bash appuser
+
+# Charger les variables d'environnement des chemins des binaires
+ARG LLVM_PATH
+ARG FFMPEG_PATH
+ARG UVICORN_PATH
+
+# Copier les binaires en utilisant les chemins détectés
+COPY --from=build ${LLVM_PATH} /usr/local/bin/llvm-config
+COPY --from=build ${FFMPEG_PATH} /usr/local/bin/ffmpeg
+COPY --from=build ${UVICORN_PATH} /usr/local/bin/uvicorn
 
 # Copier les packages Python installés
-COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --chown=appuser --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
-# Configurer le PATH pour inclure /usr/local/bin
-ENV PATH="/usr/local/bin:${PATH}"
+# Donner les permissions appropriées pour l'utilisateur non-root
+RUN chown -R appuser:appuser /app /usr/local/lib/python3.11/site-packages /usr/local/bin
 
 # Définir le dossier de travail
 WORKDIR /app
 
 # Copier le code de l'application
-COPY --from=build /app /app
+COPY --chown=appuser --from=build /app /app
 
-# Créer et utiliser un utilisateur non-root
-RUN useradd -ms /bin/bash appuser
+# Exécuter l'application en tant qu'utilisateur non-root
 USER appuser
 
 # Commande pour démarrer l'application
