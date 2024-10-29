@@ -17,3 +17,14 @@ variable "location" {
 variable "subscription_id" {
   type = string
 }
+
+# Configuration du pool de nœuds
+variable "node_min_count" {
+  type    = number
+  default = 1  # Nombre minimal de nœuds dans le pool
+}
+
+variable "node_max_count" {
+  type    = number
+  default = 5  # Nombre maximal de nœuds dans le pool
+}

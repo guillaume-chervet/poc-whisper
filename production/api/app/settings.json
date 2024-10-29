@@ -1,0 +1,5 @@
+{
+  "redis_host": "localhost",
+  "redis_port": 6379,
+   "url_slimfaas": "http://slimfaas:5000"
+}

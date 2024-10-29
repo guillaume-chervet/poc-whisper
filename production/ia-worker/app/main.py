@@ -1,14 +1,29 @@
 import asyncio
+import atexit
 import json
+import os
 
-from fastapi import FastAPI, UploadFile, File, Form, Request
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, Form
+
 from fastapi.middleware.cors import CORSMiddleware
 import whisper
 import ffmpeg
 import io
 import torchaudio
-from pydantic import BaseModel
+import ast
+from http_service import HttpService
+
+from redis import Redis
+from app_settings import Settings, init_settings_file, init_settings_environments, AppSettings
+
+setting_directory = os.path.join(os.path.dirname(__file__))
+python_environment = os.environ.get("PYTHON_ENVIRONMENT", "development")
+app_settings = AppSettings(**(Settings()
+            .overload(lambda app_settings : init_settings_file(setting_directory, python_environment))
+            .overload(init_settings_environments)
+            .build()))
+
+http_service = HttpService()
 
 app = FastAPI()
 
@@ -34,23 +49,18 @@ clients = {}
 # Créer une file d'attente pour les tâches de transcription
 transcription_queue = asyncio.Queue()
 
-class Transcript:
-    message:str
-    chunk_index: int
-    client_id:str
+redis = Redis(host="localhost", port=6379)
 
-@app.post("/audio")
+@app.post("/transcribe")
 async def receive_audio_chunk(
-    audio_chunk: UploadFile = File(...),
-    chunk_index: int = Form(...),
-    client_id: str = Form(...)
+    chunk_id: str = Form(...)
 ):
-    if client_id not in clients:
-        clients[client_id] = {
-            "sse_messages": []
-        }
+    chunk_data = redis.get_key(chunk_id)
+    chunk = ast.literal_eval(chunk_data)
 
-    content = await audio_chunk.read()
+    content = io.BytesIO(chunk["content_bytes"])
+    chunk_index = chunk["chunk_index"]
+    client_id = chunk["client_id"]
 
     # Placer le chunk dans la file d'attente de transcription
     await transcription_queue.put((client_id, content, chunk_index))
@@ -112,7 +122,7 @@ async def transcribe_audio(client_id, chunk_data, chunk_index):
         }
         message = f"data: {json.dumps(data)}\n\n"
         print(f"Transcription: {message}")
-        await send_sse_message(client_id, message)
+        await send_sse_message(client_id, message, chunk_index)
 
     except Exception as e:
         print(f"Erreur lors de la transcription : {e}")
@@ -121,59 +131,14 @@ async def transcribe_audio(client_id, chunk_data, chunk_index):
         traceback.print_exc()
 
 
-async def send_sse_message(client_id, message):
-    if client_id in clients:
-        clients[client_id]["sse_messages"].append(message)
-    else:
-        # Si le client n'est plus présent, ignorer le message
-        print(f"Client {client_id} non trouvé pour envoyer le message.")
-
-
-@app.get("/stream")
-async def sse_endpoint(request: Request, client_id: str):
-    print(f"Client {client_id} connected")
-
-    if client_id not in clients:
-        clients[client_id] = {
-            "sse_messages": []
-        }
-
-    async def event_generator():
-        try:
-            # Tant que la connexion est active avec FastAPI
-            while not await request.is_disconnected():
-                client_data = clients.get(client_id)
-                if client_data and client_data["sse_messages"]:
-
-                    message = client_data["sse_messages"].pop(0)
-                    print(f"Sending message to client {client_id} : {message}")
-                    yield message
-                else:
-                    await asyncio.sleep(0.1)
-        except asyncio.CancelledError:
-            print(f"Connexion interrompue par le client {client_id}.")
-            return  # Sortie propre de la boucle lorsque le client se déconnecte
-
-    headers = {
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        "Content-Type": "text/event-stream",
+async def send_sse_message(client_id, message, chunk_index):
+    data = {
+        "client_id": client_id,
+        "message": message,
+        "chunk_index": chunk_index
     }
-    response = StreamingResponse(event_generator(), headers=headers, media_type="text/event-stream")
-    # Ajouter les en-têtes CORS manuellement
-    response.headers['Access-Control-Allow-Origin'] = "*"
-    response.headers['Access-Control-Allow-Credentials'] = 'true'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Origin, Content-Type, Accept'
-
-    return response
-
-
-
-@app.post("/transcript")
-async def receive_transcript(transcript: Transcript):
-    await send_sse_message(transcript.client_id, transcript.message)
-    return {"status": "Transcript received"}
+    json_data = json.dumps(data)
+    await http_service.post(app_settings.url_slimfaas + "/publish-event/transcript", data=json_data, headers={"Content-Type": "application/json"})
 
 
 if __name__ == "__main__":
