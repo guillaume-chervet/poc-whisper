@@ -1,7 +1,7 @@
 import redis
 
 class Redis:
-    def __init__(self, host, port):
+    def __init__(self, host:str, port:int):
         self.host = host
         self.port = port
         self.client = redis.Redis(host=host, port=port, retry_on_timeout=True, decode_responses=True)
@@ -13,3 +13,11 @@ class Redis:
 
     def get_key(self, key:str) -> any:
         return self.client.get(key)
+
+
+redis_instance = None
+def redis_factory_get(host:str, port:int):
+    global redis_instance
+    if redis_instance is None:
+        redis_instance = Redis(host, port)
+    return redis_instance

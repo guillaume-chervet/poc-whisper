@@ -13,6 +13,14 @@ services:
     restart: "no"
     ports:
       - "8000:8000"
+  ia-worker:
+    build:
+      context: ./ia-worker
+      dockerfile: ./Dockerfile
+    image: local.io/ia-worker-transcriptor:local
+    restart: "no"
+    ports:
+      - "8001:8000"
   webapp:
     build:
       context: ./webapp
@@ -20,7 +28,7 @@ services:
     image: local.io/webapp-transcriptor:local
     restart: "no"
     ports:
-      - "4000:80"
+      - "4000:8080"
   slimfaas:
     extra_hosts:
       - host.docker.internal:host-gateway
@@ -35,4 +43,4 @@ services:
       - HOSTNAME=slimfaas-1
       - SLIMDATA_CONFIGURATION={"coldStart":"true"}
       - SLIMFAAS_PORTS=5000,5020
-      #- SLIMFAAS_SUBSCRIBE_EVENTS=reload=>https://host.docker.internal:8000
+      - SLIMFAAS_SUBSCRIBE_EVENTS=transcript=>https://host.docker.internal:8000

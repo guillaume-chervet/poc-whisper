@@ -55,3 +55,18 @@ def init_settings_environments(settings: dict) -> dict:
             settings[key.lower()] = os.environ.get(key)
     return settings
 
+
+app_settings_instance = None
+def app_settings_factory_get():
+    global app_settings_instance
+    if app_settings_instance is not None:
+        return app_settings_instance
+
+    setting_directory = os.path.join(os.path.dirname(__file__))
+    python_environment = os.environ.get("PYTHON_ENVIRONMENT", "development")
+    app_settings = AppSettings(**(Settings()
+            .overload(lambda app_settings : init_settings_file(setting_directory, python_environment))
+            .overload(init_settings_environments)
+            .build()))
+    app_settings_instance = app_settings
+    return app_settings

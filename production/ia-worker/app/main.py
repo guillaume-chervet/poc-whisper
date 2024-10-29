@@ -11,19 +11,8 @@ import ffmpeg
 import io
 import torchaudio
 import ast
-from http_service import HttpService
 
-from redis import Redis
-from app_settings import Settings, init_settings_file, init_settings_environments, AppSettings
 
-setting_directory = os.path.join(os.path.dirname(__file__))
-python_environment = os.environ.get("PYTHON_ENVIRONMENT", "development")
-app_settings = AppSettings(**(Settings()
-            .overload(lambda app_settings : init_settings_file(setting_directory, python_environment))
-            .overload(init_settings_environments)
-            .build()))
-
-http_service = HttpService()
 
 app = FastAPI()
 
@@ -49,13 +38,17 @@ clients = {}
 # Créer une file d'attente pour les tâches de transcription
 transcription_queue = asyncio.Queue()
 
-redis = Redis(host="localhost", port=6379)
+
 
 @app.post("/transcribe")
 async def receive_audio_chunk(
     chunk_id: str = Form(...)
 ):
-    chunk_data = redis.get_key(chunk_id)
+    from redis import redis_factory_get
+    from app_settings import app_settings_factory_get
+    app_settings = app_settings_factory_get()
+    redis_instance = redis_factory_get(app_settings.redis_host, app_settings.redis_port)
+    chunk_data = redis_instance.get_key(chunk_id)
     chunk = ast.literal_eval(chunk_data)
 
     content = io.BytesIO(chunk["content_bytes"])
@@ -132,12 +125,16 @@ async def transcribe_audio(client_id, chunk_data, chunk_index):
 
 
 async def send_sse_message(client_id, message, chunk_index):
+    from app_settings import app_settings_factory_get
+    from http_service import http_service_factory_get
     data = {
         "client_id": client_id,
         "message": message,
         "chunk_index": chunk_index
     }
     json_data = json.dumps(data)
+    app_settings = app_settings_factory_get()
+    http_service = http_service_factory_get()
     await http_service.post(app_settings.url_slimfaas + "/publish-event/transcript", data=json_data, headers={"Content-Type": "application/json"})
 
 

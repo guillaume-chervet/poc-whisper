@@ -1,5 +1,6 @@
 import asyncio
 import json
+import uuid
 
 from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.responses import StreamingResponse
@@ -8,7 +9,9 @@ import whisper
 import ffmpeg
 import io
 import torchaudio
-from pydantic import BaseModel
+
+from production.api.app.app_settings import app_settings_instance
+from production.api.app.http_service import http_service
 
 app = FastAPI()
 
@@ -174,6 +177,36 @@ async def sse_endpoint(request: Request, client_id: str):
 async def receive_transcript(transcript: Transcript):
     await send_sse_message(transcript.client_id, transcript.message)
     return {"status": "Transcript received"}
+
+
+@app.post("/audio-queue")
+async def receive_audio_chunk(
+    audio_chunk: UploadFile = File(...),
+    chunk_index: int = Form(...),
+    client_id: str = Form(...)
+):
+    from redis import redis_factory_get
+    from http_service import http_service_factory_get
+    from app_settings import app_settings_factory_get
+    if client_id not in clients:
+        clients[client_id] = {
+            "sse_messages": []
+        }
+    content = await audio_chunk.read()
+    redis_instance = redis_factory_get("localhost", 6379)
+    chunk = {
+        "content_bytes": content,
+        "chunk_index": chunk_index,
+        "client_id": client_id
+    }
+    # generate id
+    chunk_id = str(uuid.uuid4())
+    redis_instance.set_key(chunk_id, chunk)
+    app_settings = app_settings_factory_get()
+    http_service = http_service_factory_get()
+    http_service.post( app_settings.url_slimfaas + "/transcribe", data={"chunk_id": chunk_id})
+
+    return {"status": "Chunk received"}
 
 
 if __name__ == "__main__":

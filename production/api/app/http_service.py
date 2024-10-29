@@ -2,8 +2,6 @@ import atexit
 
 import httpx
 from starlette.background import BackgroundTask
-from tensorflow.tools.pip_package.setup import headers
-
 
 class HttpService:
     def __init__(self):
@@ -12,3 +10,11 @@ class HttpService:
 
     def post(self, url, data, headers={}):
         return self.http_async_client.post(url, data=data, headers=headers)
+
+
+http_service = None
+def http_service_factory_get():
+    global http_service
+    if http_service is None:
+        http_service = HttpService()
+    return http_service
