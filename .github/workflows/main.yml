@@ -50,7 +50,7 @@ jobs:
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   build_docker_ia_worker:
-    needs: [ tags, build_docker_api ]
+    needs: [ tags ]
     uses: ./.github/workflows/docker.yml
     with:
       image_name: "transcriptor-ia-worker"
