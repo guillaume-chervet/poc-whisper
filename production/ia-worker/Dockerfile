@@ -34,7 +34,7 @@ RUN poetry config virtualenvs.create true && poetry install --no-root --only mai
 
 # Vérifier l’installation des binaires nécessaires
 RUN command -v llvm-config && \
-    command -v ffmpeg && \
+    command -v ffmpeg
 
 # Deuxième étape : Construire l'image finale allégée
 FROM python:3.11-slim
