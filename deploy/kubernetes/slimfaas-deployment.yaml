@@ -95,7 +95,7 @@ spec:
             terminationGracePeriodSeconds: 30
           env:
             - name: BASE_FUNCTION_URL
-              value: "http://{function_name}.{namespace}.svc.cluster.local:8000"
+              value: "http://{function_name}:8000"
             - name: BASE_FUNCTION_POD_URL
               value: "http://{pod_ip}:8000"
             - name: BASE_SLIMDATA_URL
