@@ -4,7 +4,7 @@ class Redis:
     def __init__(self, host:str, port:int):
         self.host = host
         self.port = port
-        self.client = redis.Redis(host=host, port=port, retry_on_timeout=True, decode_responses=True)
+        self.client = redis.Redis(host=host, port=port)
 
     def set_key(self, key:str, data:any):
         self.client.set(key, data)
