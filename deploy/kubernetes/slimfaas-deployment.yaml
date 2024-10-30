@@ -136,8 +136,10 @@ spec:
   ports:
     - name: "publichttp"
       port: 80
+      targetPort: 5000
     - name: "http"
       port: 5000
+      targetPort: 5000
     - name: "slimdata"
       port: 3262
 ---
