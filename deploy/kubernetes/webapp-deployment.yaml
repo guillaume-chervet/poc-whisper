@@ -17,7 +17,7 @@ spec:
         app: webapp
     spec:
       containers:
-        - name: webapp-container
+        - name: webapp
           image: ghcr.io/guillaume-chervet/transcriptor-webapp:latest
           ports:
             - containerPort: 8080

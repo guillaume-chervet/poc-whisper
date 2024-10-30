@@ -24,7 +24,7 @@ spec:
         SlimFaas/DependsOn: "redis"
     spec:
       containers:
-        - name: ia-worker-container
+        - name: ia-worker
           image: ghcr.io/guillaume-chervet/transcriptor-ia-worker:latest
           ports:
             - containerPort: 8000

@@ -24,7 +24,7 @@ spec:
         SlimFaas/DependsOn: "redis"
     spec:
       containers:
-        - name: api-container
+        - name: api
           image: ghcr.io/guillaume-chervet/transcriptor-api:latest
           ports:
             - containerPort: 8000
