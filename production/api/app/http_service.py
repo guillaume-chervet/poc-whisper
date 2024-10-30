@@ -16,6 +16,7 @@ class HttpService:
 def http_service_factory_get():
     http_service = None
     def get():
+        nonlocal http_service
         if http_service is None:
             http_service = HttpService()
         return http_service

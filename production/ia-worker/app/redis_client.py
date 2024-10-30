@@ -20,6 +20,7 @@ def redis_factory_get(host:str, port:int):
     redis_instance = None
 
     def get():
+        nonlocal redis_instance
         if redis_instance is None:
             redis_instance = RedisClient(host, port)
         return redis_instance
