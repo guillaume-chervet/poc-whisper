@@ -215,5 +215,5 @@ if __name__ == "__main__":
     import uvicorn
     from app_settings import app_settings_factory_get
 
-    app_settings = app_settings_factory_get()
+    app_settings = app_settings_factory_get()()
     uvicorn.run(app, host=app_settings.server_host, port=app_settings.server_port)
