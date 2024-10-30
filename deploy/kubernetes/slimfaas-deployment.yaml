@@ -134,6 +134,8 @@ spec:
   selector:
     app: slimfaas
   ports:
+    - name: "publichttp"
+    - port: 80
     - name: "http"
       port: 5000
     - name: "slimdata"

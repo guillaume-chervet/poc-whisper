@@ -145,9 +145,11 @@ jobs:
           sed -i 's/:latest/:${{ needs.tags.outputs.new_version }}/g' ia-worker-deployment.yaml
           kubectl apply -f webapp-deployment.yaml
           kubectl apply -f webapp-service.yaml
+          kubectl apply -f webapp-ingress.yaml
           kubectl apply -f api-deployment.yaml
           kubectl apply -f api-service.yaml
           kubectl apply -f ia-worker-deployment.yaml
           kubectl apply -f ia-worker-service.yaml
           kubectl apply -f slimfaas-deployment.yaml
+          kubectl apply -f slimfaas-ingress.yaml
           kubectl apply -f redis-deployment.yaml

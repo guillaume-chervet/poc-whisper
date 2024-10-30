@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: slimfaas
+  namespace: transcriptor
+spec:
+  ingressClassName: transcriptor-slimfaas.kubernetes.azure.com
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: slimfaas
+            port:
+              number: 80
+        path: /
+        pathType: Prefix

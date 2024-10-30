@@ -26,6 +26,12 @@ resource "azurerm_kubernetes_cluster" "aks" {
     network_plugin = "azure"
   }
 
+  addon_profile {
+    http_application_routing {
+      enabled = true
+    }
+  }
+
   tags = {
     environment = "testing"
   }
