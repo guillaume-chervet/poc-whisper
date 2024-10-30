@@ -57,6 +57,8 @@ COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3
 
 # Donner les permissions appropriées pour l'utilisateur non-root
 RUN chown -R appuser:appuser /usr/local/lib/python3.11/site-packages /usr/local/bin
+RUN chown root:root /usr/bin/ffmpeg && chmod +x /usr/bin/ffmpeg
+RUN chown root:root /usr/bin/llvm-config && chmod +x /usr/bin/llvm-config
 
 # Définir le dossier de travail
 WORKDIR /app
