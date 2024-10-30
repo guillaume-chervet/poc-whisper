@@ -191,7 +191,8 @@ async def receive_audio_chunk(
             "sse_messages": []
         }
     content = await audio_chunk.read()
-    redis_instance = redis_factory_get("localhost", 6379)
+    app_settings = app_settings_factory_get()
+    redis_instance = redis_factory_get(app_settings.redis_host, app_settings.redis_port)
     chunk = {
         "content_bytes": content,
         "chunk_index": chunk_index,
@@ -200,7 +201,7 @@ async def receive_audio_chunk(
     # generate id
     chunk_id = str(uuid.uuid4())
     redis_instance.set_key(chunk_id, chunk)
-    app_settings = app_settings_factory_get()
+
     http_service = http_service_factory_get()
     http_service.post( app_settings.url_slimfaas + "/async-function/ia-worker/transcribe", data={"chunk_id": chunk_id})
 
