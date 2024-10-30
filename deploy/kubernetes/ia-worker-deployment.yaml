@@ -6,13 +6,6 @@ metadata:
   namespace: transcriptor
   labels:
     app: ia-worker
-  annotations:
-    SlimFaas/Function: "true"
-    SlimFaas/TimeoutSecondBeforeSetReplicasMin: "1200"
-    SlimFaas/NumberParallelRequest: "1"
-    SlimFaas/Visibility: "Private"
-    SlimFaas/ReplicasMin: "0"
-    SlimFaas/DependsOn: "redis"
 spec:
   replicas: 1
   selector:
@@ -22,6 +15,13 @@ spec:
     metadata:
       labels:
         app: ia-worker
+      annotations:
+        SlimFaas/Function: "true"
+        SlimFaas/TimeoutSecondBeforeSetReplicasMin: "1200"
+        SlimFaas/NumberParallelRequest: "1"
+        SlimFaas/Visibility: "Private"
+        SlimFaas/ReplicasMin: "0"
+        SlimFaas/DependsOn: "redis"
     spec:
       containers:
         - name: ia-worker-container
