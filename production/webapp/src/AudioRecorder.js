@@ -12,7 +12,7 @@ class AudioRecorder {
         this.onStop = options.onStop || function() {};
         this.onDataAvailable = options.onDataAvailable || function() {};
         this.onError = options.onError || function() {};
-        this.silenceDelay = options.silenceDelay || 400;
+        this.silenceDelay = options.silenceDelay || 200;
         this.speechThreshold = options.speechThreshold || 10;
         this.silenceThreshold = options.silenceThreshold || 2;
 

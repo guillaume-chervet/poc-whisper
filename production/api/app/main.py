@@ -200,7 +200,7 @@ async def receive_audio_chunk(
     }
     # generate id
     chunk_id = str(uuid.uuid4())
-    redis_instance.set_key(chunk_id, chunk)
+    redis_instance.set_key(chunk_id, str(chunk))
 
     http_service = http_service_factory_get()()
     http_service.post( app_settings.url_slimfaas + "/async-function/ia-worker/transcribe", data={"chunk_id": chunk_id})
