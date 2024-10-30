@@ -1,6 +1,6 @@
 import redis
 
-class Redis:
+class RedisClient:
     def __init__(self, host:str, port:int):
         self.host = host
         self.port = port
@@ -15,9 +15,13 @@ class Redis:
         return self.client.get(key)
 
 
-redis_instance = None
+
 def redis_factory_get(host:str, port:int):
-    global redis_instance
-    if redis_instance is None:
-        redis_instance = Redis(host, port)
-    return redis_instance
+    redis_instance = None
+
+    def get():
+        if redis_instance is None:
+            redis_instance = RedisClient(host, port)
+        return redis_instance
+
+    return get

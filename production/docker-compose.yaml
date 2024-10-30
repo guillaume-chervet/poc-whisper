@@ -10,21 +10,19 @@ services:
       context: ./api
       dockerfile: ./Dockerfile
     image: local.io/api-transcriptor:local
-    restart: "no"
     ports:
-      - "8000:8000
+      - "8000:8000"
     environment:
       - PYTHON_ENVIRONMENT=production
-  #ia-worker:
-  #  build:
-  #    context: ./ia-worker
-  #    dockerfile: ./Dockerfile
-  #  image: local.io/ia-worker-transcriptor:local
-  #  restart: "no"
-  #  ports:
-  #    - "8001:8000"
-  #environment:
-  #  - PYTHON_ENVIRONMENT=production
+  ia-worker:
+    build:
+      context: ./ia-worker
+      dockerfile: ./Dockerfile
+    image: local.io/ia-worker-transcriptor:local
+    ports:
+      - "8001:8000"
+    environment:
+      - PYTHON_ENVIRONMENT=production
   webapp:
     build:
       context: ./webapp

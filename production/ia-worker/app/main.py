@@ -42,10 +42,10 @@ transcription_queue = asyncio.Queue()
 async def receive_audio_chunk(
     chunk_id: str = Form(...)
 ):
-    from redis import redis_factory_get
+    from redis_client import redis_factory_get
     from app_settings import app_settings_factory_get
-    app_settings = app_settings_factory_get()
-    redis_instance = redis_factory_get(app_settings.redis_host, app_settings.redis_port)
+    app_settings = app_settings_factory_get()()
+    redis_instance = redis_factory_get(app_settings.redis_host, app_settings.redis_port)()
     chunk_data = redis_instance.get_key(chunk_id)
     chunk = ast.literal_eval(chunk_data)
 
@@ -131,8 +131,8 @@ async def send_sse_message(client_id, message, chunk_index):
         "chunk_index": chunk_index
     }
     json_data = json.dumps(data)
-    app_settings = app_settings_factory_get()
-    http_service = http_service_factory_get()
+    app_settings = app_settings_factory_get()()
+    http_service = http_service_factory_get()()
     await http_service.post(app_settings.url_slimfaas + "/publish-event/transcript", data=json_data, headers={"Content-Type": "application/json"})
 
 @app.get("/health")
