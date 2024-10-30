@@ -137,7 +137,7 @@ async def send_sse_message(client_id, message, chunk_index):
     app_settings = app_settings_factory_get()()
     http_service = http_service_factory_get()()
     response = await http_service.post(app_settings.url_slimfaas + "/publish-event/transcript", data=json_data, headers={"Content-Type": "application/json"})
-    print("Reponse code: " + response.status_code)
+    print("Reponse code: " + str(response.status_code))
 
 
 @app.get("/health")
