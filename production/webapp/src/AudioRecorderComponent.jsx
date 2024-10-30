@@ -104,11 +104,11 @@ const AudioRecorderComponent = ({}) => {
             },
             onDataAvailable: (data) => {
                 console.log('Enregistrement de données audio (callback)');
-                sendAudioChunk(baseUrl)(data, clientId, closureChunkIndex);
                 setChunkIndex((prevIndex) =>{
                     closureChunkIndex++;
                     return prevIndex + 1;
                 });
+                sendAudioChunk(baseUrl)(data, clientId, closureChunkIndex);
             },
             onError: (err) => {
                 console.error('Erreur de l\'enregistreur audio :', err);
