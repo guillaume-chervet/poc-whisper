@@ -44,10 +44,13 @@ async def receive_audio_chunk(
 ):
     from redis_client import redis_factory_get
     from app_settings import app_settings_factory_get
+    import msgpack
     app_settings = app_settings_factory_get()()
     redis_instance = redis_factory_get(app_settings.redis_host, app_settings.redis_port)()
     chunk_data = redis_instance.get_key(chunk_id)
-    chunk = ast.literal_eval(chunk_data)
+
+    # Désérialisation avec MessagePack
+    chunk = msgpack.unpackb(chunk_data, raw=False)
 
     content = io.BytesIO(chunk["content_bytes"])
     chunk_index = chunk["chunk_index"]

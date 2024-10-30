@@ -186,6 +186,7 @@ async def receive_audio_chunk(
     from redis_client import redis_factory_get
     from http_service import http_service_factory_get
     from app_settings import app_settings_factory_get
+    import msgpack
     if client_id not in clients:
         clients[client_id] = {
             "sse_messages": []
@@ -200,7 +201,9 @@ async def receive_audio_chunk(
     }
     # generate id
     chunk_id = str(uuid.uuid4())
-    redis_instance.set_key(chunk_id, str(chunk))
+    # Sérialisation avec MessagePack
+    chunk_packed = msgpack.packb(chunk, use_bin_type=True)
+    redis_instance.set_key(chunk_id, chunk_packed)
 
     http_service = http_service_factory_get()()
     response = await http_service.post( app_settings.url_slimfaas + "/async-function/ia-worker/transcribe", data={"chunk_id": chunk_id})

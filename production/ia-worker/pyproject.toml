@@ -22,6 +22,7 @@ librosa = "^0.10.2.post1"
 torchaudio = "^2.5.0"
 redis = "^5.2.0"
 httpx = "^0.27.2"
+msgpack = "^1.1.0"
 
 
 [build-system]
