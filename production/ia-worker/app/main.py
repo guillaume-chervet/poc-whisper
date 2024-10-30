@@ -51,20 +51,13 @@ async def receive_audio_chunk(
 
     # Désérialisation avec MessagePack
     chunk = msgpack.unpackb(chunk_data, raw=False)
-    content_bytes = chunk["content_bytes"]
-    # Vérifiez le type de content_stream
-    print(f"Type de content_stream: {type(content_bytes)}")
 
-    # Si content_stream est déjà un BytesIO, utilisez-le directement
-    if isinstance(content_bytes, io.BytesIO):
-        content = content_bytes
-    else:
-        content = io.BytesIO(content_bytes)
+    content_bytes = chunk["content_bytes"]
     chunk_index = chunk["chunk_index"]
     client_id = chunk["client_id"]
 
     # Placer le chunk dans la file d'attente de transcription
-    await transcription_queue.put((client_id, content, chunk_index))
+    await transcription_queue.put((client_id, content_bytes, chunk_index))
 
     return {"status": "Chunk received"}
 
