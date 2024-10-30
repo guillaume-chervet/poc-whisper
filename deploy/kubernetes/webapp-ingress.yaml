@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: webapp
   namespace: transcriptor
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
 spec:
   ingressClassName: transcriptor-webapp.kubernetes.azure.com
   rules:

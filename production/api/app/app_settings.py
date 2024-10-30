@@ -42,6 +42,7 @@ def init_settings_file(settings_dir: str, app_environment: str = "development") 
 
     # Load settings from environment specific file
     try:
+        print("app_environment: ", app_environment)
         settings_path = base_path / ('settings.' + app_environment + '.json')
         with open(settings_path, 'r') as data:
             settings_json.update(json.load(data))
@@ -66,6 +67,7 @@ def app_settings_factory_get():
 
     setting_directory = os.path.join(os.path.dirname(__file__))
     python_environment = os.environ.get("PYTHON_ENVIRONMENT", "development")
+    print("PYTHON_ENVIRONMENT: ", python_environment)
     app_settings = AppSettings(**(Settings()
             .overload(lambda app_settings : init_settings_file(setting_directory, python_environment))
             .overload(init_settings_environments)
