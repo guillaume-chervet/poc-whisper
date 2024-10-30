@@ -18,7 +18,8 @@ RUN echo "deb http://apt.llvm.org/bookworm/ llvm-toolchain-bookworm main" > /etc
     apt-get install -y llvm
 
 # Installer Poetry
-RUN pip install poetry
+ENV POETRY_VERSION=1.8.4
+RUN pip install "poetry==${POETRY_VERSION}"
 
 # Configurer le dossier de travail
 WORKDIR /app
