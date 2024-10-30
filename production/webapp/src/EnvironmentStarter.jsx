@@ -4,6 +4,7 @@ import BaseUrlContext from './BaseUrlContext';
 const EnvironmentStarter = ({ children }) => {
   const [baseUrl, setBaseUrl] = useState('');
   const [statusData, setStatusData] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     let intervalId;
@@ -16,7 +17,6 @@ const EnvironmentStarter = ({ children }) => {
       if(baseUrl.endsWith('/function/api')) {
         tempBaseUrl = tempBaseUrl.replace('/function/api', '');
       }
-      console.log('tempBaseUrl:', tempBaseUrl);
       const fetchData = async () => {
         try {
           const response = await fetch(`${tempBaseUrl}/status-functions`);
@@ -33,6 +33,7 @@ const EnvironmentStarter = ({ children }) => {
           });
         } catch (error) {
           console.error('Erreur lors de la récupération des données:', error);
+          setError(error.message);
         }
       };
 
@@ -51,6 +52,11 @@ const EnvironmentStarter = ({ children }) => {
       if (intervalId) clearInterval(intervalId);
     };
   }, [baseUrl]);
+
+
+  if(error) {
+    return <div>Erreur lors de la récupération des données: {error}</div>;
+  }
 
   if (!baseUrl) {
     return (
@@ -72,8 +78,6 @@ const EnvironmentStarter = ({ children }) => {
   const allReady = statusData.every((item) => item.NumberReady >= 1);
 
   if (allReady) {
-    console.log('Tous les pods sont prêts');
-    console.log('baseUrl:', baseUrl);
     return (
       <BaseUrlContext.Provider value={baseUrl}>
         {children}
