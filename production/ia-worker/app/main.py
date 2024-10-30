@@ -51,8 +51,15 @@ async def receive_audio_chunk(
 
     # Désérialisation avec MessagePack
     chunk = msgpack.unpackb(chunk_data, raw=False)
+    content_bytes = chunk["content_bytes"]
+    # Vérifiez le type de content_stream
+    print(f"Type de content_stream: {type(content_bytes)}")
 
-    content = io.BytesIO(chunk["content_bytes"])
+    # Si content_stream est déjà un BytesIO, utilisez-le directement
+    if isinstance(content_bytes, io.BytesIO):
+        content = content_bytes
+    else:
+        content = io.BytesIO(content_bytes)
     chunk_index = chunk["chunk_index"]
     client_id = chunk["client_id"]
 
@@ -136,7 +143,9 @@ async def send_sse_message(client_id, message, chunk_index):
     json_data = json.dumps(data)
     app_settings = app_settings_factory_get()()
     http_service = http_service_factory_get()()
-    await http_service.post(app_settings.url_slimfaas + "/publish-event/transcript", data=json_data, headers={"Content-Type": "application/json"})
+    response = await http_service.post(app_settings.url_slimfaas + "/publish-event/transcript", data=json_data, headers={"Content-Type": "application/json"})
+    print("Reponse code: " + response.status_code)
+
 
 @app.get("/health")
 async def health():

@@ -207,8 +207,7 @@ async def receive_audio_chunk(
 
     http_service = http_service_factory_get()()
     response = await http_service.post( app_settings.url_slimfaas + "/async-function/ia-worker/transcribe", data={"chunk_id": chunk_id})
-    print(response.status_code)
-    print(response.text)
+    print("Reponse code: " + response.status_code)
 
     return {"status": "Chunk received"}
 
