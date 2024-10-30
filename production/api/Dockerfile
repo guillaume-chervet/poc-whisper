@@ -39,7 +39,7 @@ FROM python:3.11-slim
 RUN useradd -ms /bin/bash appuser
 
 # Copier les chemins des binaires stockés dans des fichiers temporaires
-COPY --from=build /llvm_path /ffmpeg_path /tmp/
+COPY --from=build /llvm_path /tmp/
 
 # Charger les chemins des binaires depuis les fichiers temporaires en utilisant RUN pour définir les variables d’environnement
 RUN export LLVM_PATH=$(cat /tmp/llvm_path)
