@@ -11,6 +11,8 @@ class AppSettings:
     redis_host: str
     redis_port: int
     url_slimfaas: str
+    server_host: str
+    server_port: int
 
 
 class Settings:
