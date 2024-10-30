@@ -1,17 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
-import AudioRecorder from './AudioRecorder.js'; // Ajustez le chemin si nécessaire
+import React, {useContext, useEffect, useRef, useState} from 'react';
+import AudioRecorder from './AudioRecorder.js';
+import BaseUrlContext from "./BaseUrlContext.js"; // Ajustez le chemin si nécessaire
 
 function generateColor(index) {
     return `hsl(${Math.sin(index) * 360}, 100%, 50%)`;
 }
 
-const sendAudioChunk= (serverUrl) => (chunk, clientId, chunkIndex) => {
+const sendAudioChunk= (baseUrl) => (chunk, clientId, chunkIndex) => {
     const formData = new FormData();
     formData.append('audio_chunk', chunk);
     formData.append('chunk_index', chunkIndex);
     formData.append('client_id', clientId);
 
-    fetch(`${serverUrl}/audio`, {
+    fetch(`${baseUrl}/audio`, {
         method: 'POST',
         body: formData,
     })
@@ -25,17 +26,19 @@ const sendAudioChunk= (serverUrl) => (chunk, clientId, chunkIndex) => {
     });
 }
 
-const AudioRecorderComponent = () => {
+const AudioRecorderComponent = ({}) => {
     const [status, setStatus] = useState('En attente de la parole...');
     const [isRecording, setIsRecording] = useState(false);
     const [error, setError] = useState(null);
     const [transcripts, setTranscripts] = useState([]);
     const [chunkIndex, setChunkIndex] = useState(0);
-    const [serverUrl, setServerUrl] = useState('http://localhost:8000');
     const recorderRef = useRef(null);
     const eventSourceRef = useRef(null);
+    const baseUrl = useContext(BaseUrlContext);
 
     useEffect(() => {
+        console.log('Initialisation de l\'enregistreur audio');
+        console.log('URL de base :', baseUrl);
         // Nettoyage des ressources précédentes
         if (recorderRef.current) {
             if (recorderRef.current.isRecording) {
@@ -53,7 +56,7 @@ const AudioRecorderComponent = () => {
         }
 
         const clientId = Math.random().toString(36).substring(7);
-        const eventSource = new EventSource(`${serverUrl}/stream?client_id=${clientId}`);
+        const eventSource = new EventSource(`${baseUrl}/stream?client_id=${clientId}`);
         eventSourceRef.current = eventSource;
 
         eventSource.onmessage = (event) => {
@@ -101,7 +104,7 @@ const AudioRecorderComponent = () => {
             },
             onDataAvailable: (data) => {
                 console.log('Enregistrement de données audio (callback)');
-                sendAudioChunk(serverUrl)(data, clientId, closureChunkIndex);
+                sendAudioChunk(baseUrl)(data, clientId, closureChunkIndex);
                 setChunkIndex((prevIndex) =>{
                     closureChunkIndex++;
                     return prevIndex + 1;
@@ -129,22 +132,11 @@ const AudioRecorderComponent = () => {
                 eventSourceRef.current = null;
             }
         };
-    }, [serverUrl]);
+    }, [baseUrl]);
 
     return (
         <div>
             <h1>Enregistreur Audio avec Transcription en Temps Réel</h1>
-            <div>
-                <label>
-                    URL de base de l'API :
-                    <input
-                        type="text"
-                        value={serverUrl}
-                        onChange={(e) => setServerUrl(e.target.value)}
-                        placeholder="http://localhost:8000"
-                    />
-                </label>
-            </div>
             {error ? (
                 <p style={{ color: 'red' }}>{error}</p>
             ) : (

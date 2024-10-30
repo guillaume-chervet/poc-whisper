@@ -1,12 +1,17 @@
 import './App.css'
 import AudioRecorderComponent from "./AudioRecorderComponent.jsx";
+import EnvironmentStarter from "./EnvironmentStarter.jsx";
+
 
 function App() {
+
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
        return (
-        <div className="App">
-          <AudioRecorderComponent />
-        </div>
+           <EnvironmentStarter>
+               <div className="App">
+                   <AudioRecorderComponent/>
+               </div>
+           </EnvironmentStarter>
       );
     } else {
         console.error("L'API mediaDevices n'est pas supportée par ce navigateur.");

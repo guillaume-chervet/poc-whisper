@@ -21,7 +21,7 @@ spec:
         SlimFaas/NumberParallelRequest: "1"
     spec:
       containers:
-        - name: redis-container
+        - name: redis
           image: redis:latest
           ports:
             - containerPort: 6379
