@@ -17,9 +17,6 @@ RUN echo "deb http://apt.llvm.org/bookworm/ llvm-toolchain-bookworm main" > /etc
     apt-get update && \
     apt-get install -y llvm
 
-# Installer ffmpeg
-RUN apt-get install -y --no-install-recommends ffmpeg
-
 # Installer Poetry
 RUN pip install poetry
 
@@ -33,8 +30,7 @@ COPY . /app
 RUN poetry config virtualenvs.create false && poetry install --no-root --only main
 
 # Stocker les chemins des binaires dans des fichiers temporaires
-RUN which llvm-config > /llvm_path && \
-    which ffmpeg > /ffmpeg_path
+RUN which llvm-config > /llvm_path
 
 # Deuxième étape : Construire l'image finale allégée
 FROM python:3.11-slim
@@ -43,22 +39,21 @@ FROM python:3.11-slim
 RUN useradd -ms /bin/bash appuser
 
 # Copier les chemins des binaires stockés dans des fichiers temporaires
-COPY --from=build /llvm_path /ffmpeg_path /tmp/
+COPY --from=build /llvm_path /tmp/
 
 # Charger les chemins des binaires depuis les fichiers temporaires en utilisant RUN pour définir les variables d’environnement
-RUN export LLVM_PATH=$(cat /tmp/llvm_path) && \
-    export FFMPEG_PATH=$(cat /tmp/ffmpeg_path)
+RUN export LLVM_PATH=$(cat /tmp/llvm_path)
 
 COPY $LLVM_PATH /usr/local/bin/llvm-config
-COPY $FFMPEG_PATH /usr/local/bin/ffmpeg
+
+# Install ffmpeg
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg
 
 # Copier les packages Python installés
 COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
 # Donner les permissions appropriées pour l'utilisateur non-root
 RUN chown -R appuser:appuser /usr/local/lib/python3.11/site-packages /usr/local/bin
-RUN chown root:root /usr/local/bin/ffmpeg && chmod +x /usr/local/bin/ffmpeg
-RUN chown root:root /usr/local/bin/llvm-config && chmod +x /usr/local/bin/llvm-config
 
 # Définir le dossier de travail
 WORKDIR /app
