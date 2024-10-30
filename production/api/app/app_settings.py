@@ -62,6 +62,7 @@ def init_settings_environments(settings: dict) -> dict:
 def app_settings_factory_get():
     app_settings_instance = None
     def get():
+        nonlocal app_settings_instance
         if app_settings_instance is not None:
             return app_settings_instance
 
