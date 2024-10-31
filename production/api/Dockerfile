@@ -1,22 +1,6 @@
 # Première étape : Construire l'environnement avec les dépendances nécessaires
 FROM python:3.11-slim AS build
 
-# Mettre à jour les paquets et installer les dépendances requises
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    wget \
-    curl \
-    ca-certificates \
-    gnupg \
-    lsb-release \
-    software-properties-common
-
-# Ajouter le dépôt LLVM pour obtenir la version la plus récente
-RUN echo "deb http://apt.llvm.org/bookworm/ llvm-toolchain-bookworm main" > /etc/apt/sources.list.d/llvm.list && \
-    wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
-    apt-get update && \
-    apt-get install -y llvm
-
 # Installer Poetry
 ENV POETRY_VERSION=1.8.4
 RUN pip install "poetry==${POETRY_VERSION}"
@@ -30,25 +14,11 @@ COPY . /app
 # Installer les dépendances sans les dev packages
 RUN poetry config virtualenvs.create false && poetry install --no-root --only main
 
-# Stocker les chemins des binaires dans des fichiers temporaires
-RUN which llvm-config > /llvm_path
-
 # Deuxième étape : Construire l'image finale allégée
 FROM python:3.11-slim
 
 # Créer l'utilisateur non-root
 RUN useradd -ms /bin/bash appuser
-
-# Copier les chemins des binaires stockés dans des fichiers temporaires
-COPY --from=build /llvm_path /tmp/
-
-# Charger les chemins des binaires depuis les fichiers temporaires en utilisant RUN pour définir les variables d’environnement
-RUN export LLVM_PATH=$(cat /tmp/llvm_path)
-
-COPY $LLVM_PATH /usr/local/bin/llvm-config
-
-# Install ffmpeg
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg
 
 # Copier les packages Python installés
 COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages

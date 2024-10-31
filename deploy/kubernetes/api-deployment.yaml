@@ -33,9 +33,9 @@ spec:
               value: "production"
           resources:
             limits:
-              memory: "2000Mi"
-              cpu: "1000m"
+              memory: "240Mi"
+              cpu: "200m"
             requests:
-              ephemeral-storage: "1000Mi"
-              memory: "2000Mi"
-              cpu: "1000m"
+              ephemeral-storage: "100Mi"
+              memory: "240Mi"
+              cpu: "200m"

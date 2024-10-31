@@ -12,7 +12,7 @@ const sendAudioChunk= (baseUrl) => (chunk, clientId, chunkIndex) => {
     formData.append('chunk_index', chunkIndex);
     formData.append('client_id', clientId);
 
-    fetch(`${baseUrl}/audio-queue`, {
+    fetch(`${baseUrl}/audio`, {
         method: 'POST',
         body: formData,
     })

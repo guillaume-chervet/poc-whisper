@@ -14,7 +14,7 @@ class AudioRecorder {
         this.onError = options.onError || function() {};
         this.silenceDelay = options.silenceDelay || 200;
         this.speechThreshold = options.speechThreshold || 10;
-        this.silenceThreshold = options.silenceThreshold || 2;
+        this.silenceThreshold = options.silenceThreshold || 4;
 
         // Nouvelle propriété pour contrôler la détection de la parole
         this.isDetectingSpeech = false;
