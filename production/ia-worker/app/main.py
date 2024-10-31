@@ -1,15 +1,26 @@
 import asyncio
 import json
+from typing import Annotated
 
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, Depends
 
 from fastapi.middleware.cors import CORSMiddleware
 import whisper
 import ffmpeg
 import io
 import torchaudio
-import ast
+import msgpack
+from app_settings import app_settings_factory_get, AppSettings
+from redis_client import redis_factory_get, RedisClient
+from http_service import http_service_factory_get, HttpService
 
+SettingsDependency = Annotated[AppSettings, Depends(app_settings_factory_get())]
+
+def get_redis_client(app_settings: AppSettings = SettingsDependency) -> RedisClient:
+    return redis_factory_get(app_settings.redis_host, app_settings.redis_port)()
+
+RedisDependency = Annotated[RedisClient, Depends(get_redis_client)]
+HttpServiceDependency = Annotated[HttpService, Depends(http_service_factory_get())]
 
 
 app = FastAPI()
@@ -37,17 +48,14 @@ clients = {}
 transcription_queue = asyncio.Queue()
 
 
-
 @app.post("/transcribe")
 async def receive_audio_chunk(
-    chunk_id: str = Form(...)
+    chunk_id: str = Form(...),
+    app_settings: AppSettings = SettingsDependency,
+    redis_client: RedisClient = RedisDependency,
+    http_service: HttpService = HttpServiceDependency
 ):
-    from redis_client import redis_factory_get
-    from app_settings import app_settings_factory_get
-    import msgpack
-    app_settings = app_settings_factory_get()()
-    redis_instance = redis_factory_get(app_settings.redis_host, app_settings.redis_port)()
-    chunk_data = redis_instance.get_key(chunk_id)
+    chunk_data = redis_client.get_key(chunk_id)
 
     # Désérialisation avec MessagePack
     chunk = msgpack.unpackb(chunk_data, raw=False)
@@ -57,15 +65,15 @@ async def receive_audio_chunk(
     client_id = chunk["client_id"]
 
     # Placer le chunk dans la file d'attente de transcription
-    await transcription_queue.put((client_id, content_bytes, chunk_index))
+    await transcription_queue.put((client_id, content_bytes, chunk_index, app_settings, http_service))
 
     return {"status": "Chunk received"}
 
 
 async def transcription_worker():
     while True:
-        client_id, content, chunk_index = await transcription_queue.get()
-        await transcribe_audio(client_id, content, chunk_index)
+        client_id, content, chunk_index, app_settings, http_service = await transcription_queue.get()
+        await transcribe_audio(client_id, content, chunk_index, app_settings, http_service)
         transcription_queue.task_done()
         await asyncio.sleep(0.1)
 
@@ -76,7 +84,7 @@ async def startup_event():
     asyncio.create_task(transcription_worker())
 
 
-async def transcribe_audio(client_id, chunk_data, chunk_index):
+async def transcribe_audio(client_id, chunk_data, chunk_index, app_settings, http_service):
     try:
         # Convertir le chunk en WAV
         input_stream = io.BytesIO(chunk_data)
@@ -116,7 +124,7 @@ async def transcribe_audio(client_id, chunk_data, chunk_index):
         }
         message = f"data: {json.dumps(data)}\n\n"
         print(f"Transcription: {message}")
-        await send_sse_message(client_id, message, chunk_index)
+        await send_sse_message(client_id, message, chunk_index, app_settings, http_service)
 
     except Exception as e:
         print(f"Erreur lors de la transcription : {e}")
@@ -125,17 +133,13 @@ async def transcribe_audio(client_id, chunk_data, chunk_index):
         traceback.print_exc()
 
 
-async def send_sse_message(client_id, message, chunk_index):
-    from app_settings import app_settings_factory_get
-    from http_service import http_service_factory_get
+async def send_sse_message(client_id, message, chunk_index, app_settings, http_service):
     data = {
         "client_id": client_id,
         "message": message,
         "chunk_index": chunk_index
     }
     json_data = json.dumps(data)
-    app_settings = app_settings_factory_get()()
-    http_service = http_service_factory_get()()
     response = await http_service.post(app_settings.url_slimfaas + "/publish-event/transcript/transcript", data=json_data, headers={"Content-Type": "application/json"})
     print("Reponse code: " + str(response.status_code))
 

@@ -26,6 +26,13 @@ spec:
       containers:
         - name: ia-worker
           image: ghcr.io/guillaume-chervet/transcriptor-ia-worker:latest
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 5
           ports:
             - containerPort: 8000
           env:

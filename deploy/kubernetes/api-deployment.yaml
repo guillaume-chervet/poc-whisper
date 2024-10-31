@@ -26,6 +26,13 @@ spec:
       containers:
         - name: api
           image: ghcr.io/guillaume-chervet/transcriptor-api:latest
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
           ports:
             - containerPort: 8000
           env:
