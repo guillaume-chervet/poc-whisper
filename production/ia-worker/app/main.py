@@ -19,8 +19,11 @@ SettingsDependency = Annotated[AppSettings, Depends(app_settings_factory_get())]
 def get_redis_client(app_settings: AppSettings = SettingsDependency) -> RedisClient:
     return redis_factory_get(app_settings.redis_host, app_settings.redis_port)()
 
-RedisDependency = Annotated[RedisClient, Depends(get_redis_client)]
-HttpServiceDependency = Annotated[HttpService, Depends(http_service_factory_get())]
+def get_http_service():
+    return http_service_factory_get()()
+
+RedisDependency = Depends(get_redis_client)
+HttpServiceDependency = Depends(get_http_service)
 
 
 app = FastAPI()
