@@ -43,7 +43,9 @@ docker-compose up
 # Roadmap
 - [infrastructure] Configure a URL with HTTPS on Kubernetes
 - [ia-worker] Set up GPU on Kubernetes
-- [infrastructure] For scaling, add keda to scale from GPU consumption or queue length
+- [infrastructure] For scaling, add keda to scale from GPU consumption or queue length or wait Slimfaas to add this feature
+- Set up Redis with high availability
+- Set up Slimfaas with high availability
 - Add monitoring
 - Add alerting
 - Add logging

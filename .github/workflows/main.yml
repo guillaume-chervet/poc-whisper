@@ -153,3 +153,4 @@ jobs:
           kubectl apply -f slimfaas-deployment.yaml
           kubectl apply -f slimfaas-ingress.yaml
           kubectl apply -f redis-deployment.yaml
+          kubectl apply -f hpas.yaml

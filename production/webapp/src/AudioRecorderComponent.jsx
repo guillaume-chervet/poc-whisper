@@ -27,6 +27,8 @@ const sendAudioChunk= (fetch, baseUrl) => (chunk, clientId, chunkIndex) => {
     });
 }
 
+let iniAsyncPromise = null;
+
 const AudioRecorderComponent = ({}) => {
     const [status, setStatus] = useState('En attente de la parole...');
     const [isRecording, setIsRecording] = useState(false);
@@ -39,6 +41,9 @@ const AudioRecorderComponent = ({}) => {
     const { fetch } = useOidcFetch();
 
     useEffect(() => {
+        if (iniAsyncPromise) {
+            return;
+        }
         console.log('Initialisation de l\'enregistreur audio');
         console.log('URL de base :', baseUrl);
         // Nettoyage des ressources précédentes
@@ -79,8 +84,7 @@ const AudioRecorderComponent = ({}) => {
                     const updatedTranscripts = [...prev, data];
                     console.log('Transcription reçue :', data.transcript);
 
-                    const ordered_transcripts = updatedTranscripts.sort((a, b) => a.chunk_index - b.chunk_index);
-                    return ordered_transcripts;
+                    return updatedTranscripts.sort((a, b) => a.chunk_index - b.chunk_index);
                 });
             };
 
@@ -131,7 +135,10 @@ const AudioRecorderComponent = ({}) => {
             recorderRef.current = recorder;
             recorder.init();
         }
-        initAsync();
+        iniAsyncPromise = initAsync();
+        iniAsyncPromise.then(() => {
+            iniAsyncPromise = null;
+        });
 
         return () => {
             if (recorderRef.current) {
