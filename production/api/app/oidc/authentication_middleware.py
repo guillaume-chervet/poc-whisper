@@ -4,7 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
-from authentication import Authentication, IHttpServiceGet
+from .authentication import Authentication, IHttpServiceGet
 
 
 def authentication_middleware(issuer: str,
