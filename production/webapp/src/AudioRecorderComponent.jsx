@@ -38,7 +38,7 @@ const AudioRecorderComponent = ({}) => {
     const baseUrl = useContext(BaseUrlContext);
     const { fetch } = useOidcFetch();
 
-    useEffect(async () => {
+    useEffect(() => {
         console.log('Initialisation de l\'enregistreur audio');
         console.log('URL de base :', baseUrl);
         // Nettoyage des ressources précédentes
@@ -56,80 +56,82 @@ const AudioRecorderComponent = ({}) => {
             eventSourceRef.current.close();
             eventSourceRef.current = null;
         }
-
-        const clientId = Math.random().toString(36).substring(7);
-        const vanillaOidc = OidcClient.get();
-        const tokens = await vanillaOidc.getValidTokenAsync();
-        const accessToken = tokens.access_token;
-        const eventSource = new EventSource(`${baseUrl}/stream?client_id=${clientId}`, {
-            headers: {
-                'Authorization': 'Bearer ' + accessToken
-            }
-        });
-        eventSourceRef.current = eventSource;
-
-        eventSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-
-            setTranscripts((prev) => {
-                if (prev.some(t => t.chunk_index === data.chunk_index)) {
-                    return prev;
+        const initAsync = async () => {
+            const clientId = Math.random().toString(36).substring(7);
+            const vanillaOidc = OidcClient.get();
+            const tokens = await vanillaOidc.getValidTokenAsync();
+            const accessToken = tokens.access_token;
+            const eventSource = new EventSource(`${baseUrl}/stream?client_id=${clientId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken
                 }
-
-                const updatedTranscripts = [...prev, data];
-                console.log('Transcription reçue :', data.transcript);
-
-                const ordered_transcripts = updatedTranscripts.sort((a, b) => a.chunk_index - b.chunk_index);
-                return ordered_transcripts;
             });
-        };
+            eventSourceRef.current = eventSource;
 
-        eventSource.onerror = (err) => {
-            console.error('Erreur SSE :', err);
-            setError('Erreur de connexion avec le serveur.');
-        };
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
 
-        eventSource.onopen = () => {
-            setError(null);
-            console.log('Connexion SSE établie');
-        };
+                setTranscripts((prev) => {
+                    if (prev.some(t => t.chunk_index === data.chunk_index)) {
+                        return prev;
+                    }
 
-        eventSource.onclose = () => {
-            console.log('Connexion SSE fermée');
-        };
+                    const updatedTranscripts = [...prev, data];
+                    console.log('Transcription reçue :', data.transcript);
 
-        let closureChunkIndex = chunkIndex;
-
-        const recorder = new AudioRecorder({
-            onStart: () => {
-                console.log('Enregistrement commencé (callback)');
-                setIsRecording(true);
-                setStatus('Enregistrement en cours...');
-            },
-            onStop: () => {
-                console.log('Enregistrement terminé (callback)');
-                setIsRecording(false);
-                setStatus('En attente de la parole...');
-            },
-            onDataAvailable: (data) => {
-                console.log('Enregistrement de données audio (callback)');
-                setChunkIndex((prevIndex) => {
-                    closureChunkIndex++;
-                    return prevIndex + 1;
+                    const ordered_transcripts = updatedTranscripts.sort((a, b) => a.chunk_index - b.chunk_index);
+                    return ordered_transcripts;
                 });
-                sendAudioChunk(fetch, baseUrl)(data, clientId, closureChunkIndex);
-            },
-            onError: (err) => {
-                console.error('Erreur de l\'enregistreur audio :', err);
-                setError('Erreur lors de l\'accès au microphone.');
-            },
-            silenceDelay: 3000,
-            speechThreshold: 10,
-            silenceThreshold: 5,
-        });
+            };
 
-        recorderRef.current = recorder;
-        recorder.init();
+            eventSource.onerror = (err) => {
+                console.error('Erreur SSE :', err);
+                setError('Erreur de connexion avec le serveur.');
+            };
+
+            eventSource.onopen = () => {
+                setError(null);
+                console.log('Connexion SSE établie');
+            };
+
+            eventSource.onclose = () => {
+                console.log('Connexion SSE fermée');
+            };
+
+            let closureChunkIndex = chunkIndex;
+
+            const recorder = new AudioRecorder({
+                onStart: () => {
+                    console.log('Enregistrement commencé (callback)');
+                    setIsRecording(true);
+                    setStatus('Enregistrement en cours...');
+                },
+                onStop: () => {
+                    console.log('Enregistrement terminé (callback)');
+                    setIsRecording(false);
+                    setStatus('En attente de la parole...');
+                },
+                onDataAvailable: (data) => {
+                    console.log('Enregistrement de données audio (callback)');
+                    setChunkIndex((prevIndex) => {
+                        closureChunkIndex++;
+                        return prevIndex + 1;
+                    });
+                    sendAudioChunk(fetch, baseUrl)(data, clientId, closureChunkIndex);
+                },
+                onError: (err) => {
+                    console.error('Erreur de l\'enregistreur audio :', err);
+                    setError('Erreur lors de l\'accès au microphone.');
+                },
+                silenceDelay: 3000,
+                speechThreshold: 10,
+                silenceThreshold: 5,
+            });
+
+            recorderRef.current = recorder;
+            recorder.init();
+        }
+        initAsync();
 
         return () => {
             if (recorderRef.current) {
