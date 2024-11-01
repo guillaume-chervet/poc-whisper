@@ -83,8 +83,10 @@ async def transcription_worker():
         await asyncio.sleep(0.1)
 
 
-# Démarrer le worker de transcription en arrière-plan
-asyncio.create_task(transcription_worker())
+@app.on_event("startup")
+async def startup_event():
+    # Démarrer le worker de transcription en arrière-plan
+    asyncio.create_task(transcription_worker())
 
 
 async def transcribe_audio(client_id, chunk_data, chunk_index, app_settings, http_service):
