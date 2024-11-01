@@ -13,8 +13,8 @@ class AppSettings:
     url_slimfaas: str
     server_host: str
     server_port: int
-    oidc_issuer: Optional[str] = None
-    oidc_authority: Optional[str] = "true"
+    oidc_authority: Optional[str] = None
+    oidc_enable: Optional[str] = "true"
 
 
 class Settings:
