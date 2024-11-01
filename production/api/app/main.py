@@ -85,8 +85,10 @@ async def receive_transcript(transcript: Transcript):
     await send_sse_message(transcript.client_id, transcript.message)
     return {"status": "Transcript received"}
 
-SettingsDependency = Annotated[AppSettings, Depends(app_settings_factory_get())]
 
+def get_app_settings() -> AppSettings:
+    return app_settings_factory_get()()
+SettingsDependency = Depends(get_app_settings)
 def get_redis_client(app_settings: AppSettings = SettingsDependency) -> RedisClient:
     return redis_factory_get(app_settings.redis_host, app_settings.redis_port)()
 

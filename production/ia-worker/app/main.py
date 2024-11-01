@@ -14,8 +14,10 @@ from app_settings import app_settings_factory_get, AppSettings
 from redis_client import redis_factory_get, RedisClient
 from http_service import http_service_factory_get, HttpService
 
-SettingsDependency = Annotated[AppSettings, Depends(app_settings_factory_get())]
 
+def get_app_settings() -> AppSettings:
+    return app_settings_factory_get()()
+SettingsDependency = Depends(get_app_settings)
 def get_redis_client(app_settings: AppSettings = SettingsDependency) -> RedisClient:
     return redis_factory_get(app_settings.redis_host, app_settings.redis_port)()
 
