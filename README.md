@@ -12,7 +12,7 @@ git clone https://github.com/guillaume-chervet/poc-whisper
 cd poc-whisper
 docker-compose up webapp
 # open your browser at : http://localhost:4000/
-# then copy/paste this url in the textfield: http://57.153.23.150/function/api
+# then copy/paste this baseUrl in the textfield: http://57.153.23.150/function/api
 
 # webapp is available at http://20.8.16.190/ but it requires HTTPS to access the microphone
 ```
@@ -25,7 +25,7 @@ cd poc-whisper
 cd production
 docker-compose up
 # open your browser at : http://localhost:4000/
-# then copy/paste this url in the textfield: http://localhost:5020/function/api
+# then copy/paste this baseUrl in the textfield: http://localhost:5020/function/api
 ```
 
 # Architecture

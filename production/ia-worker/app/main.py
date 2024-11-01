@@ -83,10 +83,8 @@ async def transcription_worker():
         await asyncio.sleep(0.1)
 
 
-@app.on_event("startup")
-async def startup_event():
-    # Démarrer le worker de transcription en arrière-plan
-    asyncio.create_task(transcription_worker())
+# Démarrer le worker de transcription en arrière-plan
+asyncio.create_task(transcription_worker())
 
 
 async def transcribe_audio(client_id, chunk_data, chunk_index, app_settings, http_service):
@@ -155,7 +153,6 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    from app_settings import app_settings_factory_get
 
     app_settings = app_settings_factory_get()
     uvicorn.run(app, host=app_settings.server_host, port=app_settings.server_port)
