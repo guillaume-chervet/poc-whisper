@@ -133,7 +133,8 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    from oidc.authentication_middleware import authentication_middleware, XHttpServiceGet
+    from oidc.authentication_middleware import authentication_middleware
+    from oidc.authentication import XHttpServiceGet
 
     app_settings = app_settings_factory_get()
     if app_settings.oidc_enable == "true":
