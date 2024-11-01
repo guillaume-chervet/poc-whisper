@@ -9,6 +9,8 @@ from app_settings import app_settings_factory_get, AppSettings
 from redis_client import redis_factory_get, RedisClient
 from http_service import http_service_factory_get, HttpService
 import msgpack
+from oidc.authentication_middleware import authentication_middleware
+from oidc.authentication import XHttpServiceGet
 app = FastAPI()
 
 # Ajouter le middleware CORS
@@ -23,6 +25,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app_settings = app_settings_factory_get()
+if app_settings.oidc_enable == "true":
+    exclude_urls = ["/health", "/version", "/metrics", "/docs", "/openapi_json"]
+    app.add_middleware(authentication_middleware(
+        app_settings.oidc_authority,
+        ["api"],
+        "api",
+        exclude_urls,
+        XHttpServiceGet(http_service_factory_get().get_http_async_client())
+    ))
 
 # Stocker les messages SSE par client
 clients = {}
@@ -133,17 +146,5 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    from oidc.authentication_middleware import authentication_middleware
-    from oidc.authentication import XHttpServiceGet
 
-    app_settings = app_settings_factory_get()
-    if app_settings.oidc_enable == "true":
-        exclude_urls = ["/health", "/version", "/metrics", "/docs", "/openapi_json"]
-        app.add_middleware(authentication_middleware(
-            app_settings.oidc_authority,
-            ["api"],
-            "api",
-            exclude_urls,
-            XHttpServiceGet(http_service_factory_get().get_http_async_client())
-        ))
     uvicorn.run(app, host=app_settings.server_host, port=app_settings.server_port)
