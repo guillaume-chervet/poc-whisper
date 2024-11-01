@@ -118,7 +118,7 @@ const AudioRecorderComponent = ({}) => {
                 onDataAvailable: (data) => {
                     console.log('Enregistrement de données audio (callback)');
                     setChunkIndex((prevIndex) => {
-                        closureChunkIndex++;
+                        closureChunkIndex = prevIndex + 1;
                         return prevIndex + 1;
                     });
                     sendAudioChunk(fetch, baseUrl)(data, clientId, closureChunkIndex);
