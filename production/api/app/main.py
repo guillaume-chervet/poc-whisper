@@ -1,6 +1,5 @@
 import asyncio
 import uuid
-from typing import Annotated
 
 from fastapi import FastAPI, UploadFile, File, Form, Request, Depends
 from fastapi.responses import StreamingResponse
@@ -80,20 +79,20 @@ async def sse_endpoint(request: Request, client_id: str):
 
     return response
 
-@app.post("/transcript")
+@app.post("/transcript-callback")
 async def receive_transcript(transcript: Transcript):
     await send_sse_message(transcript.client_id, transcript.message)
     return {"status": "Transcript received"}
 
 
 def get_app_settings() -> AppSettings:
-    return app_settings_factory_get()()
+    return app_settings_factory_get()
 SettingsDependency = Depends(get_app_settings)
 def get_redis_client(app_settings: AppSettings = SettingsDependency) -> RedisClient:
-    return redis_factory_get(app_settings.redis_host, app_settings.redis_port)()
+    return redis_factory_get(app_settings.redis_host, app_settings.redis_port)
 
 def get_http_service():
-    return http_service_factory_get()()
+    return http_service_factory_get()
 
 RedisDependency = Depends(get_redis_client)
 HttpServiceDependency = Depends(get_http_service)
@@ -136,5 +135,5 @@ if __name__ == "__main__":
     import uvicorn
     from app_settings import app_settings_factory_get
 
-    app_settings = app_settings_factory_get()()
+    app_settings = app_settings_factory_get()
     uvicorn.run(app, host=app_settings.server_host, port=app_settings.server_port)

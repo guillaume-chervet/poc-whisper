@@ -56,4 +56,4 @@ services:
       - HOSTNAME=slimfaas-1
       - SLIMDATA_CONFIGURATION={"coldStart":"true"}
       - SLIMFAAS_PORTS=5000,5020
-      - SLIMFAAS_SUBSCRIBE_EVENTS=transcript=>https://host.docker.internal:8000/transcript
+      - SLIMFAAS_SUBSCRIBE_EVENTS=transcript=>http://host.docker.internal:8000

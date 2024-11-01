@@ -11,13 +11,11 @@ class HttpService:
     def post(self, url, data, headers={}):
         return self.http_async_client.post(url, data=data, headers=headers)
 
-
+http_service_instance = None
 
 def http_service_factory_get():
-    http_service = None
-    def get():
-        nonlocal http_service
-        if http_service is None:
-            http_service = HttpService()
-        return http_service
-    return get
+    global http_service_instance
+    if http_service_instance is not None:
+        return http_service_instance
+    http_service_instance = HttpService()
+    return http_service_instance

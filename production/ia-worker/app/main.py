@@ -16,13 +16,13 @@ from http_service import http_service_factory_get, HttpService
 
 
 def get_app_settings() -> AppSettings:
-    return app_settings_factory_get()()
+    return app_settings_factory_get()
 SettingsDependency = Depends(get_app_settings)
 def get_redis_client(app_settings: AppSettings = SettingsDependency) -> RedisClient:
-    return redis_factory_get(app_settings.redis_host, app_settings.redis_port)()
+    return redis_factory_get(app_settings.redis_host, app_settings.redis_port)
 
 def get_http_service():
-    return http_service_factory_get()()
+    return http_service_factory_get()
 
 RedisDependency = Depends(get_redis_client)
 HttpServiceDependency = Depends(get_http_service)
@@ -145,7 +145,7 @@ async def send_sse_message(client_id, message, chunk_index, app_settings, http_s
         "chunk_index": chunk_index
     }
     json_data = json.dumps(data)
-    response = await http_service.post(app_settings.url_slimfaas + "/publish-event/transcript/transcript", data=json_data, headers={"Content-Type": "application/json"})
+    response = await http_service.post(app_settings.url_slimfaas + "/publish-event/transcript/transcript-callback", data=json_data, headers={"Content-Type": "application/json"})
     print("Reponse code: " + str(response.status_code))
 
 
@@ -157,5 +157,5 @@ if __name__ == "__main__":
     import uvicorn
     from app_settings import app_settings_factory_get
 
-    app_settings = app_settings_factory_get()()
+    app_settings = app_settings_factory_get()
     uvicorn.run(app, host=app_settings.server_host, port=app_settings.server_port)
