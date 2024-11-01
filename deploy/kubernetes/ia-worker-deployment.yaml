@@ -41,8 +41,8 @@ spec:
           resources:
             limits:
               memory: "2400Mi"
-              cpu: "2000m"
+              cpu: "1000m"
             requests:
               ephemeral-storage: "1000Mi"
               memory: "2400Mi"
-              cpu: "1600m"
+              cpu: "500m"
