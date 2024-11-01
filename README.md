@@ -48,9 +48,10 @@ docker-compose up
 - Add alerting
 - Add logging
 - Add Tests
-- [api] Manage cors
+- [api] Manage cors policy
+- [webapp] Manage CSP policy 
 - [api] Manage rate limiting
-- [api/webaap] Manage authentication and authorization
+- [api/webapp] Manage authentication and authorization
 - [webapp] Send small chunks to the api while recording
 - [all] Add retry pattern
 - [train] Train / deploy / tests the model like explain in https://www.youtube.com/watch?v=QFOdB9GPf_Y&list=PL8EMdIH6Mzxw5mVb0hz4n7xeIa5aloVmC

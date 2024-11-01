@@ -1,12 +1,13 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import AudioRecorder from './AudioRecorder.js';
-import BaseUrlContext from "./BaseUrlContext.js"; // Ajustez le chemin si nécessaire
+import BaseUrlContext from "./BaseUrlContext.js";
+import {OidcClient, useOidcFetch} from "@axa-fr/react-oidc"; // Ajustez le chemin si nécessaire
 
 function generateColor(index) {
     return `hsl(${Math.sin(index) * 360}, 100%, 50%)`;
 }
 
-const sendAudioChunk= (baseUrl) => (chunk, clientId, chunkIndex) => {
+const sendAudioChunk= (fetch, baseUrl) => (chunk, clientId, chunkIndex) => {
     const formData = new FormData();
     formData.append('audio_chunk', chunk);
     formData.append('chunk_index', chunkIndex);
@@ -35,8 +36,9 @@ const AudioRecorderComponent = ({}) => {
     const recorderRef = useRef(null);
     const eventSourceRef = useRef(null);
     const baseUrl = useContext(BaseUrlContext);
+    const { fetch } = useOidcFetch();
 
-    useEffect(() => {
+    useEffect(async () => {
         console.log('Initialisation de l\'enregistreur audio');
         console.log('URL de base :', baseUrl);
         // Nettoyage des ressources précédentes
@@ -56,7 +58,14 @@ const AudioRecorderComponent = ({}) => {
         }
 
         const clientId = Math.random().toString(36).substring(7);
-        const eventSource = new EventSource(`${baseUrl}/stream?client_id=${clientId}`);
+        const vanillaOidc = OidcClient.get();
+        const tokens = await vanillaOidc.getValidTokenAsync();
+        const accessToken = tokens.access_token;
+        const eventSource = new EventSource(`${baseUrl}/stream?client_id=${clientId}`, {
+            headers: {
+                'Authorization': 'Bearer ' + accessToken
+            }
+        });
         eventSourceRef.current = eventSource;
 
         eventSource.onmessage = (event) => {
@@ -104,11 +113,11 @@ const AudioRecorderComponent = ({}) => {
             },
             onDataAvailable: (data) => {
                 console.log('Enregistrement de données audio (callback)');
-                setChunkIndex((prevIndex) =>{
+                setChunkIndex((prevIndex) => {
                     closureChunkIndex++;
                     return prevIndex + 1;
                 });
-                sendAudioChunk(baseUrl)(data, clientId, closureChunkIndex);
+                sendAudioChunk(fetch, baseUrl)(data, clientId, closureChunkIndex);
             },
             onError: (err) => {
                 console.error('Erreur de l\'enregistreur audio :', err);
