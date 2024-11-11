@@ -120,7 +120,7 @@ async def transcribe_audio(client_id, chunk_data, chunk_index, app_settings, htt
         audio_data = waveform.numpy().flatten()
 
         # Transcrire l'audio dans un exécuteur
-        result = await loop.run_in_executor(None, lambda: model.transcribe(audio_data, fp16=False, language="en"))
+        result = await loop.run_in_executor(None, lambda: model.transcribe(audio_data, fp16=False, language="fr"))
 
         # Envoyer la transcription via SSE en incluant chunk_index
         data = {
