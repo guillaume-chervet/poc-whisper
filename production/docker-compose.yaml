@@ -15,7 +15,7 @@ services:
     #  context: ./api
     #  dockerfile: ./Dockerfile
     #image: local.io/api-transcriptor:local
-    image:  ghcr.io/guillaume-chervet/transcriptor-api:0.77.26
+    image:  ghcr.io/guillaume-chervet/transcriptor-api:0.77.29
     ports:
       - "8000:8000"
     environment:
@@ -28,7 +28,7 @@ services:
     #  context: ./ia-worker
     #  dockerfile: ./Dockerfile
     #image: local.io/ia-worker-transcriptor:local
-    image:  ghcr.io/guillaume-chervet/transcriptor-ia-worker:0.77.26
+    image:  ghcr.io/guillaume-chervet/transcriptor-ia-worker:0.77.29
     ports:
       - "8001:8000"
     environment:
@@ -41,7 +41,7 @@ services:
     #  context: ./webapp
     #  dockerfile: ./Dockerfile
     #image: local.io/webapp-transcriptor:local
-    image:  ghcr.io/guillaume-chervet/transcriptor-webapp:0.77.28
+    image:  ghcr.io/guillaume-chervet/transcriptor-webapp:0.77.29
     restart: "no"
     ports:
       - "4000:8080"
