@@ -37,11 +37,11 @@ services:
       redis:
         condition: service_healthy
   webapp:
-    build:
-      context: ./webapp
-      dockerfile: ./Dockerfile
-    image: local.io/webapp-transcriptor:local
-    #image:  ghcr.io/guillaume-chervet/transcriptor-api:0.77.26
+    # build:
+    #  context: ./webapp
+    #  dockerfile: ./Dockerfile
+    #image: local.io/webapp-transcriptor:local
+    image:  ghcr.io/guillaume-chervet/transcriptor-webapp:0.77.28
     restart: "no"
     ports:
       - "4000:8080"

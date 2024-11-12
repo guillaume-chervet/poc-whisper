@@ -68,5 +68,8 @@ USER appuser
 # Ajouter l'environnement virtuel au PATH
 ENV PATH="/usr/local/bin:${PATH}"
 
+RUN pyhton -c "import whisper \
+whisper.load_model('small')"
+
 # Commande pour démarrer l'application
 CMD ["python", "./app/main.py"]
