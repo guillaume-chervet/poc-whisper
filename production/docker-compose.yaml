@@ -15,7 +15,7 @@ services:
     #  context: ./api
     #  dockerfile: ./Dockerfile
     #image: local.io/api-transcriptor:local
-    image:  ghcr.io/guillaume-chervet/transcriptor-api:0.77.29
+    image:  ghcr.io/guillaume-chervet/transcriptor-api:0.77.30
     ports:
       - "8000:8000"
     environment:

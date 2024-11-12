@@ -68,7 +68,7 @@ USER appuser
 # Ajouter l'environnement virtuel au PATH
 ENV PATH="/usr/local/bin:${PATH}"
 
-RUN python -c "import whisper \n\
+RUN python -c "import whisper;  \
 whisper.load_model('small')"
 
 # Commande pour démarrer l'application
