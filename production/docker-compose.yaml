@@ -11,10 +11,11 @@ services:
       timeout: 3s
       retries: 5
   api:
-    build:
-      context: ./api
-      dockerfile: ./Dockerfile
-    image: local.io/api-transcriptor:local
+    #build:
+    #  context: ./api
+    #  dockerfile: ./Dockerfile
+    #image: local.io/api-transcriptor:local
+    image:  ghcr.io/guillaume-chervet/transcriptor-api:0.77.26
     ports:
       - "8000:8000"
     environment:
@@ -23,10 +24,11 @@ services:
       redis:
         condition: service_healthy
   ia-worker:
-    build:
-      context: ./ia-worker
-      dockerfile: ./Dockerfile
-    image: local.io/ia-worker-transcriptor:local
+    #build:
+    #  context: ./ia-worker
+    #  dockerfile: ./Dockerfile
+    #image: local.io/ia-worker-transcriptor:local
+    image:  ghcr.io/guillaume-chervet/transcriptor-ia-worker:0.77.26
     ports:
       - "8001:8000"
     environment:
@@ -39,6 +41,7 @@ services:
       context: ./webapp
       dockerfile: ./Dockerfile
     image: local.io/webapp-transcriptor:local
+    #image:  ghcr.io/guillaume-chervet/transcriptor-api:0.77.26
     restart: "no"
     ports:
       - "4000:8080"
