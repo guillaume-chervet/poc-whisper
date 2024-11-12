@@ -55,7 +55,7 @@ const EnvironmentStarter = ({ children }) => {
 
 
   if(error) {
-    return <div>Erreur lors de la récupération des données: {error}</div>;
+    return <div>Error while retrieving data: {error}</div>;
   }
 
   if (!baseUrl) {
@@ -63,7 +63,7 @@ const EnvironmentStarter = ({ children }) => {
       <div>
         <input
           type="text"
-          placeholder="Entrez la baseUrl"
+          placeholder="Enter the baseUrl"
           value={baseUrl}
           onChange={(e) => setBaseUrl(e.target.value)}
         />
@@ -72,7 +72,7 @@ const EnvironmentStarter = ({ children }) => {
   }
 
   if (!statusData) {
-    return <div>Chargement des données...</div>;
+    return <div>Loading data...</div>;
   }
 
   const allReady = statusData.every((item) => item.NumberReady >= 1);
@@ -91,8 +91,8 @@ const EnvironmentStarter = ({ children }) => {
 
     return (
       <div>
-        <p>Démarrage de l'environnement en cours...</p>
-        <p>Pods en cours de démarrage : {startingPods}</p>
+        <p>Starting the environment in progress...</p>
+        <p>Pods being started: {startingPods}</p>
       </div>
     );
   }
