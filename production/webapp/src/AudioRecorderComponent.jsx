@@ -30,7 +30,7 @@ const sendAudioChunk= (fetch, baseUrl) => (chunk, clientId, chunkIndex) => {
 let iniAsyncPromise = null;
 
 const AudioRecorderComponent = ({}) => {
-    const [status, setStatus] = useState('En attente de la parole...');
+    const [status, setStatus] = useState('Waiting to speak...');
     const [isRecording, setIsRecording] = useState(false);
     const [error, setError] = useState(null);
     const [transcripts, setTranscripts] = useState([]);
@@ -108,12 +108,12 @@ const AudioRecorderComponent = ({}) => {
                 onStart: () => {
                     console.log('Enregistrement commencé (callback)');
                     setIsRecording(true);
-                    setStatus('Enregistrement en cours...');
+                    setStatus('Recording in progress...');
                 },
                 onStop: () => {
                     console.log('Enregistrement terminé (callback)');
                     setIsRecording(false);
-                    setStatus('En attente de la parole...');
+                    setStatus('Waiting to speak...');
                 },
                 onDataAvailable: (data) => {
                     console.log('Enregistrement de données audio (callback)');
@@ -125,7 +125,7 @@ const AudioRecorderComponent = ({}) => {
                 },
                 onError: (err) => {
                     console.error('Erreur de l\'enregistreur audio :', err);
-                    setError('Erreur lors de l\'accès au microphone.');
+                    setError('Error accessing microphone.');
                 },
                 silenceDelay: 3000,
                 speechThreshold: 10,
@@ -154,7 +154,7 @@ const AudioRecorderComponent = ({}) => {
 
     return (
         <div>
-            <h1>Enregistreur Audio avec Transcription en Temps Réel</h1>
+            <h1>Audio Recorder with Real-Time Transcription</h1>
             {error ? (
                 <p style={{ color: 'red' }}>{error}</p>
             ) : (
@@ -168,7 +168,7 @@ const AudioRecorderComponent = ({}) => {
                     </span>
                 ))}</p>
                 {chunkIndex > transcripts.length && (
-                    <p>Traitement de {chunkIndex - transcripts.length} chunk en cours...</p>
+                    <p>Treatment of {chunkIndex - transcripts.length} chunk in progress...</p>
                 )}
             </div>
         </div>

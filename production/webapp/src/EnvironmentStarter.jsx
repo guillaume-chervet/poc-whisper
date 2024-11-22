@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import BaseUrlContext from './BaseUrlContext';
 import PlanetSaver from "./PlanetSaver.jsx";
 
@@ -10,7 +10,7 @@ const EnvironmentStarter = ({ children }) => {
       <div>
         <input
           type="text"
-          placeholder="Entrez la baseUrl"
+          placeholder="Enter baseUrl"
           value={baseUrl}
           onChange={(e) => setBaseUrl(e.target.value)}
         />
