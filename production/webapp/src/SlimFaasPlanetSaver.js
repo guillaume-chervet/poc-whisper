@@ -79,6 +79,10 @@ export default class SlimFaasPlanetSaver {
             this.triggerEvent('error', { message: errorMessage });
 
             console.error('Erreur lors de la récupération des données :', errorMessage);
+        } finally {
+            this.intervalId = setTimeout(() => {
+                this.fetchStatus();
+            }, this.interval);
         }
     }
 
@@ -98,7 +102,7 @@ export default class SlimFaasPlanetSaver {
 
         this.fetchStatus();
 
-        this.intervalId = setInterval(() => {
+        this.intervalId = setTimeout(() => {
             this.fetchStatus();
         }, this.interval);
     }
