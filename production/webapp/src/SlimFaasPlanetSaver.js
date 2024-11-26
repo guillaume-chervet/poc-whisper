@@ -1,7 +1,13 @@
 
+const normalizeBaseUrl = (url) => {
+    let tempUrl = url;
+    if (tempUrl.endsWith('/')) tempUrl = tempUrl.slice(0, -1);
+    return tempUrl;
+}
+
 export default class SlimFaasPlanetSaver {
     constructor(baseUrl, options = {}) {
-        this.baseUrl = this.normalizeBaseUrl(baseUrl);
+        this.baseUrl = normalizeBaseUrl(baseUrl);
         this.updateCallback = options.updateCallback || (() => {});
         this.errorCallback = options.errorCallback || (() => {});
         this.interval = options.interval || 5000;
@@ -14,22 +20,12 @@ export default class SlimFaasPlanetSaver {
         this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
         document.addEventListener('visibilitychange', this.handleVisibilityChange);
 
-        // Initialise le calque et le style
         this.createOverlay();
         this.injectStyles();
 
-        // Événements personnalisés
-        this.events = document.createElement('div'); // Utilisé comme bus d'événements
+        this.events = document.createElement('div'); 
     }
 
-    // Normalise l'URL de base
-    normalizeBaseUrl(url) {
-        let tempUrl = url;
-        if (tempUrl.endsWith('/')) tempUrl = tempUrl.slice(0, -1);
-        return tempUrl;
-    }
-
-    // Gestion de la visibilité du document
     handleVisibilityChange() {
         this.isDocumentVisible = !document.hidden;
         if (this.isDocumentVisible) {
@@ -51,13 +47,17 @@ export default class SlimFaasPlanetSaver {
         try {
             await Promise.all(wakePromises);
         } catch (error) {
-            console.error("Erreur lors du réveil des pods:", error);
+            console.error("Error waking up pods:", error);
         }
     }
 
-    // Récupère le statut de l'infrastructure
     async fetchStatus() {
-        if (!this.isDocumentVisible) return;
+        if (!this.isDocumentVisible) {
+            this.intervalId = setTimeout(() => {
+                this.fetchStatus();
+            }, this.interval);
+            return;
+        }
 
         try {
             const response = await fetch(`${this.baseUrl}/status-functions`);
@@ -75,10 +75,9 @@ export default class SlimFaasPlanetSaver {
             const errorMessage = error.message;
             this.errorCallback(errorMessage);
 
-            // Déclenche un événement "error"
             this.triggerEvent('error', { message: errorMessage });
 
-            console.error('Erreur lors de la récupération des données :', errorMessage);
+            console.error('Error getting slimfaas data :', errorMessage);
         } finally {
             this.intervalId = setTimeout(() => {
                 this.fetchStatus();
@@ -86,7 +85,6 @@ export default class SlimFaasPlanetSaver {
         }
     }
 
-    // Définit l'état "ready" et gère le calque
     setReadyState(isReady) {
         this.isReady = isReady;
         if (isReady) {
@@ -96,7 +94,6 @@ export default class SlimFaasPlanetSaver {
         }
     }
 
-    // Démarre la surveillance (polling)
     startPolling() {
         if (this.intervalId || !this.baseUrl) return;
 
@@ -107,7 +104,6 @@ export default class SlimFaasPlanetSaver {
         }, this.interval);
     }
 
-    // Arrête la surveillance
     stopPolling() {
         if (this.intervalId) {
             clearInterval(this.intervalId);
@@ -115,7 +111,6 @@ export default class SlimFaasPlanetSaver {
         }
     }
 
-    // Injecte les styles CSS via un élément <style>
     injectStyles() {
         const cssString = `
       .environment-overlay {
@@ -145,7 +140,6 @@ export default class SlimFaasPlanetSaver {
         document.head.appendChild(this.styleElement);
     }
 
-    // Crée un calque pour le message d'attente
     createOverlay() {
         this.overlayElement = document.createElement('div');
         this.overlayElement.className = 'environment-overlay';
@@ -153,34 +147,29 @@ export default class SlimFaasPlanetSaver {
         document.body.appendChild(this.overlayElement);
     }
 
-    // Affiche le calque
     showOverlay() {
         if (this.overlayElement) {
             this.overlayElement.classList.add('visible');
         }
     }
 
-    // Cache le calque
     hideOverlay() {
         if (this.overlayElement) {
             this.overlayElement.classList.remove('visible');
         }
     }
 
-    // Met à jour dynamiquement le message de l'overlay
     updateOverlayMessage(newMessage) {
         if (this.overlayElement) {
             this.overlayElement.innerText = newMessage;
         }
     }
 
-    // Déclenche un événement personnalisé
     triggerEvent(eventName, detail) {
         const event = new CustomEvent(eventName, { detail });
         this.events.dispatchEvent(event);
     }
     
-    // Nettoyage des ressources
     cleanup() {
         this.stopPolling();
         document.removeEventListener('visibilitychange', this.handleVisibilityChange);
