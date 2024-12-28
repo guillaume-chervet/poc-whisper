@@ -1,6 +1,6 @@
 # Proof Of Concept scale with Whisper
 
-This project is a proof of concept to transcribe audio in real-time using a serverless architecture.
+This project is a proof of concept to transcribe audio in real-time using a serverless architecture using: python, slimfaas, terraform, kubernetes on azure
 
 ## Getting Started
 
