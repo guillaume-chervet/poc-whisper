@@ -1,3 +1,9 @@
+networks:
+  slimfaas-net:
+    driver: bridge
+
+volumes:
+  slimfaas_data:
 
 services:
   redis:
@@ -5,58 +11,105 @@ services:
     restart: "no"
     ports:
       - "6379:6379"
+    labels:
+      app: "redis"
+      SlimFaas/Function: "true"
+      SlimFaas/Namespace: "default"
+      SlimFaas/TimeoutSecondBeforeSetReplicasMin: "120"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - slimfaas-net
+
   api:
-    #build:
-    #  context: ./api
-    #  dockerfile: ./Dockerfile
-    #image: local.io/api-transcriptor:local
-    image:  ghcr.io/guillaume-chervet/transcriptor-api:0.77.32
+    image: ghcr.io/guillaume-chervet/transcriptor-api:0.77.38
     ports:
-      - "8000:8000"
+      - "8040:8000"  
     environment:
       - PYTHON_ENVIRONMENT=production
-    depends_on:
-      redis:
-        condition: service_healthy
+      - url_slimfaas=http://slimfaas:5020
+    labels:
+      app: "api"
+      SlimFaas/Function: "true"
+      SlimFaas/Namespace: "default"
+      SlimFaas/SubscribeEvents: "Private:transcript"
+      SlimFaas/TimeoutSecondBeforeSetReplicasMin: "120"
+      SlimFaas/NumberParallelRequest: "1"
+      SlimFaas/DependsOn: "redis"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - slimfaas-net
+
   ia-worker:
-    #build:
-    #  context: ./ia-worker
-    #  dockerfile: ./Dockerfile
-    #image: local.io/ia-worker-transcriptor:local
-    image:  ghcr.io/guillaume-chervet/transcriptor-ia-worker:0.77.32
+    image: ghcr.io/guillaume-chervet/transcriptor-ia-worker:0.77.38
     ports:
-      - "8001:8000"
+      - "8001:8000"   # host 8001 -> container 8000 (inchangé)
     environment:
       - PYTHON_ENVIRONMENT=production
-    depends_on:
-      redis:
-        condition: service_healthy
+      - url_slimfaas=http://slimfaas:5020
+    labels:
+      app: "ia-worker"
+      SlimFaas/Function: "true"
+      SlimFaas/Namespace: "default"
+      SlimFaas/TimeoutSecondBeforeSetReplicasMin: "120"
+      SlimFaas/NumberParallelRequest: "1"
+      SlimFaas/DependsOn: "redis"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - slimfaas-net
+
   webapp:
-    # build:
-    #  context: ./webapp
-    #  dockerfile: ./Dockerfile
-    #image: local.io/webapp-transcriptor:local
-    image:  ghcr.io/guillaume-chervet/transcriptor-webapp:0.77.32
+    image: ghcr.io/guillaume-chervet/transcriptor-webapp:0.77.38
     restart: "no"
     ports:
-      - "4000:8080"
+      - "4000:8080"   # inchangé
+    networks:
+      - slimfaas-net
+
   slimfaas:
+    image: axaguildev/slimfaas:dev
+    build:
+       context: "C:/github/SlimFaas/"
+       dockerfile: ./Dockerfile
+    ports:
+      - "5020:5020" 
+    user: "0:0"
+    environment:
+      DOCKER_HOST: "unix:///var/run/docker.sock"
+      BASE_SLIMDATA_URL: "http://localhost:3262/"
+      SLIMDATA_CONFIGURATION: '{"coldStart":"true"}'
+      ASPNETCORE_URLS: "http://0.0.0.0:5020" 
+      SLIMFAAS_ORCHESTRATOR: "Docker"
+      HOSTNAME: "slimfaas-1"
+      SLIMDATA_DIRECTORY: "/database-poc-whisper"
+      ASPNETCORE_ENVIRONMENT: "Production"
+    volumes:
+      - slimfaas_data:/database-poc-whisper
+      - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
       - host.docker.internal:host-gateway
-    image: docker.io/axaguildev/slimfaas:0.24.18
-    ports:
-      - 5020:5000
-    environment:
-      - BASE_FUNCTION_URL=http://{function_name}:8000
-      - BASE_FUNCTION_POD_URL=http://{function_name}:8000
-      - MOCK_KUBERNETES_FUNCTIONS={"Functions":[{"Name":"api","NumberParallelRequest":1},{"Name":"ia-worker","NumberParallelRequest":1}],"Slimfaas":[{"Name":"slimfaas-1"}]}
-      - BASE_SLIMDATA_URL=http://localhost:3262/
-      - HOSTNAME=slimfaas-1
-      - SLIMDATA_CONFIGURATION={"coldStart":"true"}
-      - SLIMFAAS_PORTS=5000,5020
-      - SLIMFAAS_SUBSCRIBE_EVENTS=transcript=>http://host.docker.internal:8000
+    networks:
+      - slimfaas-net
+    labels:
+      app: "slimfaas"
+      com.docker.compose.service: "slimfaas"
+    healthcheck:
+      # Le /health de SlimFaas écoute sur le port interne 5000
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5020/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
