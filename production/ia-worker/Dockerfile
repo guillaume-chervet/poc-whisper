@@ -8,8 +8,7 @@ RUN apt-get update && \
     curl \
     ca-certificates \
     gnupg \
-    lsb-release \
-    software-properties-common
+    lsb-release
 
 # Ajouter le dépôt LLVM pour obtenir la version la plus récente
 RUN echo "deb http://apt.llvm.org/bookworm/ llvm-toolchain-bookworm main" > /etc/apt/sources.list.d/llvm.list && \
