@@ -3,7 +3,7 @@ import BaseUrlContext from './BaseUrlContext';
 import PlanetSaver from "./PlanetSaver.jsx";
 
 const EnvironmentStarter = ({ children }) => {
-  const [baseUrl, setBaseUrl] = useState('');
+  const [baseUrl, setBaseUrl] = useState('http://localhost:5020/function/api');
 
   if (!baseUrl) {
     return (
