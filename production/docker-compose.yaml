@@ -25,7 +25,7 @@ services:
       - slimfaas-net
 
   api:
-    image: ghcr.io/guillaume-chervet/transcriptor-api:0.78.2
+    image: ghcr.io/guillaume-chervet/transcriptor-api:0.78.4
     ports:
       - "8040:8000"  
     environment:
@@ -49,9 +49,9 @@ services:
       - slimfaas-net
 
   ia-worker:
-    image: ghcr.io/guillaume-chervet/transcriptor-ia-worker:0.78.2
+    image: ghcr.io/guillaume-chervet/transcriptor-ia-worker:0.78.4
     ports:
-      - "8001:8000"   # host 8001 -> container 8000 (inchangé)
+      - "8001:8000"
     environment:
       - PYTHON_ENVIRONMENT=production
       - url_slimfaas=http://slimfaas:5020
@@ -72,18 +72,18 @@ services:
       - slimfaas-net
 
   webapp:
-    image: ghcr.io/guillaume-chervet/transcriptor-webapp:0.78.2
+    image: ghcr.io/guillaume-chervet/transcriptor-webapp:0.78.4
     restart: "no"
     ports:
-      - "4000:8080"   # inchangé
+      - "4000:8080"  
     networks:
       - slimfaas-net
 
   slimfaas:
-    image: axaguildev/slimfaas:dev
-    build:
-       context: "C:/github/SlimFaas/"
-       dockerfile: ./Dockerfile
+    image: axaguildev/slimfaas:latest
+    #build:
+    #   context: "C:/github/SlimFaas/"
+    #   dockerfile: ./Dockerfile
     ports:
       - "5020:5020" 
     user: "0:0"
